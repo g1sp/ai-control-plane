@@ -1,0 +1,50 @@
+version: '3.9'
+
+services:
+  gateway:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: policy-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY:-}
+      GATEWAY_MODE: ${GATEWAY_MODE:-local}
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DATABASE_URL: sqlite:////app/data/audit.db
+      OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - ollama
+    networks:
+      - gateway-network
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-server
+    ports:
+      - "11434:11434"
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+    volumes:
+      - ./models:/root/.ollama
+    networks:
+      - gateway-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  gateway-network:
+    driver: bridge
+
+volumes:
+  data:
