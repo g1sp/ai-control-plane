@@ -3,8 +3,9 @@
 import time
 import uuid
 from datetime import datetime, timedelta
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from .config import settings
@@ -18,6 +19,7 @@ from .services.policy import PolicyEngine
 from .services.router import ModelRouter
 from .services.audit import AuditLogger
 from .services.cost_calculator import CostCalculator
+from .services.streaming import get_stream_manager, StreamingEventCallback
 from .integrations.ollama import OllamaClient
 from .integrations.claude import ClaudeClient
 from .utils.logger import logger
@@ -609,6 +611,116 @@ async def list_tools():
         total_tools=len(tools),
         tools=tools,
     )
+
+
+# Phase 3: Real-Time Streaming Endpoints
+
+@app.post("/agent/stream/session")
+async def create_streaming_session(
+    goal: str = Query(...),
+    user_id: str = Query(...),
+):
+    """Create a new streaming session."""
+    stream_manager = get_stream_manager()
+    session_id = stream_manager.create_session(user_id, goal)
+
+    return {
+        "session_id": session_id,
+        "user_id": user_id,
+        "goal": goal,
+        "status": "created",
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+
+
+@app.websocket("/agent/stream/{session_id}")
+async def websocket_stream(websocket: WebSocket, session_id: str):
+    """WebSocket endpoint for real-time agent execution streaming."""
+    stream_manager = get_stream_manager()
+    session = stream_manager.get_session(session_id)
+
+    if not session:
+        await websocket.close(code=4004, reason="Session not found")
+        return
+
+    await websocket.accept()
+    logger.info(f"WebSocket client connected to session {session_id}")
+
+    try:
+        async for event in stream_manager.stream_events(session_id):
+            try:
+                await websocket.send_json({
+                    "type": event.type.value,
+                    "timestamp": event.timestamp.isoformat(),
+                    "content": event.content,
+                    "data": event.data,
+                })
+            except Exception as e:
+                logger.error(f"Error sending event: {str(e)}")
+                break
+    except WebSocketDisconnect:
+        logger.info(f"WebSocket client disconnected from session {session_id}")
+    except Exception as e:
+        logger.error(f"WebSocket error: {str(e)}")
+        try:
+            await websocket.close(code=1011, reason=str(e))
+        except:
+            pass
+
+
+@app.get("/agent/stream/{session_id}/sse")
+async def server_sent_events_stream(session_id: str):
+    """Server-Sent Events endpoint for agent streaming (SSE fallback)."""
+    stream_manager = get_stream_manager()
+    session = stream_manager.get_session(session_id)
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    async def event_generator():
+        async for event in stream_manager.stream_events(session_id):
+            yield event.to_sse()
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        }
+    )
+
+
+@app.get("/agent/stream/{session_id}/status")
+async def stream_session_status(session_id: str):
+    """Get status of a streaming session."""
+    stream_manager = get_stream_manager()
+    session = stream_manager.get_session(session_id)
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return {
+        "session_id": session_id,
+        "completed": session.completed,
+        "total_events": len(session.events),
+        "total_cost_usd": session.total_cost_usd,
+        "final_response": session.final_response,
+        "created_at": session.created_at.isoformat(),
+        "duration_seconds": (datetime.utcnow() - session.created_at).total_seconds(),
+    }
+
+
+@app.get("/agent/stream/{session_id}/history")
+async def stream_session_history(session_id: str):
+    """Get full history of a streaming session."""
+    stream_manager = get_stream_manager()
+    session = stream_manager.get_session(session_id)
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return session.to_dict()
 
 
 if __name__ == "__main__":
