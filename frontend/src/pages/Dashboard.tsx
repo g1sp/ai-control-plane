@@ -21,11 +21,15 @@ import StreamingAnalytics from "../components/StreamingAnalytics";
 import ReportGenerator from "../components/ReportGenerator";
 import FilterPanel from "../components/FilterPanel";
 import FilterBadges from "../components/FilterBadges";
+import RealtimeStatus from "../components/RealtimeStatus";
 import { useFilters } from "../hooks/useFilters";
+import { useRealtimeMetrics } from "../hooks/useRealtimeMetrics";
+import { RealtimeProvider } from "../context/RealtimeContext";
 import { TimeRange } from "../types/analytics";
 
 const DashboardContent: React.FC = () => {
   const filters = useFilters();
+  const { connectionState, lastUpdate } = useRealtimeMetrics("user1");
   const [tab, setTab] = useState<"overview" | "queries" | "users" | "tools" | "costs" | "performance" | "streaming" | "reports">(
     "overview"
   );
@@ -49,9 +53,12 @@ const DashboardContent: React.FC = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-            <p className="text-gray-600 mt-1">Monitor your AI gateway performance and usage</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+              <p className="text-gray-600 mt-1">Monitor your AI gateway performance and usage</p>
+            </div>
+            <RealtimeStatus connectionState={connectionState} lastUpdateTime={lastUpdate} />
           </div>
         </div>
       </div>
@@ -161,15 +168,28 @@ const DashboardContent: React.FC = () => {
   );
 };
 
-// Wrapper that provides FilterContext
+// Wrapper that provides FilterContext and RealtimeContext
 import { FilterProvider } from "../context/FilterContext";
 
-export const Dashboard: React.FC = () => {
+const DashboardWithProviders: React.FC = () => {
+  const { connectionState, isConnected, isReconnecting, error } = useRealtimeMetrics("user1");
+  const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
+
   return (
-    <FilterProvider>
-      <DashboardContent />
-    </FilterProvider>
+    <RealtimeProvider
+      connectionState={connectionState}
+      isConnected={isConnected}
+      isReconnecting={isReconnecting}
+      error={error}
+      lastUpdateTime={lastUpdateTime}
+    >
+      <FilterProvider>
+        <DashboardContent />
+      </FilterProvider>
+    </RealtimeProvider>
   );
 };
+
+export const Dashboard: React.FC = DashboardWithProviders;
 
 export default Dashboard;
