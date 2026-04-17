@@ -85,6 +85,61 @@ class QueryAnalytics:
 
         return sum(q["cost"] for q in recent) / len(recent)
 
+    def filter_queries(
+        self,
+        hours: int = 24,
+        complexities: Optional[List[str]] = None,
+        success_status: str = "all",
+        cost_min: Optional[float] = None,
+        cost_max: Optional[float] = None,
+        latency_min: Optional[int] = None,
+        latency_max: Optional[int] = None,
+        sort_by: str = "cost",
+        sort_order: str = "desc",
+        limit: int = 100,
+        offset: int = 0,
+    ) -> Tuple[List[Dict], int]:
+        """Filter queries with multiple dimensions and return paginated results."""
+        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        results = [q for q in self.queries if q["timestamp"] > cutoff]
+
+        # Filter by complexity
+        if complexities:
+            results = [q for q in results if q["complexity"] in complexities]
+
+        # Filter by success status
+        if success_status == "success":
+            results = [q for q in results if q["success"]]
+        elif success_status == "failed":
+            results = [q for q in results if not q["success"]]
+
+        # Filter by cost range
+        if cost_min is not None:
+            results = [q for q in results if q["cost"] >= cost_min]
+        if cost_max is not None:
+            results = [q for q in results if q["cost"] <= cost_max]
+
+        # Filter by latency range
+        if latency_min is not None:
+            results = [q for q in results if q["duration_ms"] >= latency_min]
+        if latency_max is not None:
+            results = [q for q in results if q["duration_ms"] <= latency_max]
+
+        # Sort
+        reverse = sort_order == "desc"
+        if sort_by == "cost":
+            results.sort(key=lambda x: x["cost"], reverse=reverse)
+        elif sort_by == "latency":
+            results.sort(key=lambda x: x["duration_ms"], reverse=reverse)
+        elif sort_by == "count":
+            results.sort(key=lambda x: x.get("query_count", 1), reverse=reverse)
+
+        # Paginate
+        total = len(results)
+        paginated = results[offset : offset + limit]
+
+        return paginated, total
+
 
 class UserAnalytics:
     """Analyze per-user metrics and spending."""
@@ -282,6 +337,42 @@ class CostAnalytics:
 
         sorted_users = sorted(user_totals.items(), key=lambda x: x[1], reverse=True)
         return sorted_users[:limit]
+
+    def filter_users_by_cost(
+        self,
+        days: int = 30,
+        cost_min: Optional[float] = None,
+        cost_max: Optional[float] = None,
+        sort_by: str = "cost",
+        sort_order: str = "desc",
+        limit: int = 50,
+        offset: int = 0,
+    ) -> Tuple[List[Dict[str, float]], int]:
+        """Filter users by cost with pagination."""
+        user_totals = defaultdict(float)
+
+        for date_costs in list(self.daily_costs.values())[-days:]:
+            for user_id, cost in date_costs.items():
+                user_totals[user_id] += cost
+
+        # Filter by cost range
+        results = list(user_totals.items())
+        if cost_min is not None:
+            results = [(u, c) for u, c in results if c >= cost_min]
+        if cost_max is not None:
+            results = [(u, c) for u, c in results if c <= cost_max]
+
+        # Sort
+        reverse = sort_order == "desc"
+        if sort_by == "cost":
+            results.sort(key=lambda x: x[1], reverse=reverse)
+        else:
+            results.sort(key=lambda x: x[0], reverse=reverse)
+
+        # Return paginated results
+        total = len(results)
+        paginated = results[offset : offset + limit]
+        return [{"user": u, "cost": c} for u, c in paginated], total
 
 
 class PerformanceAnalytics:

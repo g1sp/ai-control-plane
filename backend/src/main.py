@@ -1097,6 +1097,88 @@ def get_streaming_sessions_analytics_endpoint(hours: int = Query(24, ge=1, le=72
     return analytics.get_session_stats(hours)
 
 
+# Filtered Analytics Endpoints (Phase 5)
+
+@app.get("/api/v1/analytics/queries/filtered")
+async def get_filtered_queries(
+    hours: int = Query(24, ge=1),
+    complexities: str = Query(None),
+    success_status: str = Query("all", regex="^(all|success|failed)$"),
+    cost_min: float = Query(None),
+    cost_max: float = Query(None),
+    latency_min: int = Query(None),
+    latency_max: int = Query(None),
+    sort_by: str = Query("cost", regex="^(cost|latency|count)$"),
+    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    limit: int = Query(100, ge=1, le=1000),
+    offset: int = Query(0, ge=0),
+):
+    """Get filtered and paginated queries."""
+    query_analytics = get_query_analytics()
+    complexity_list = complexities.split(",") if complexities else None
+    queries, total = query_analytics.filter_queries(
+        hours=hours,
+        complexities=complexity_list,
+        success_status=success_status,
+        cost_min=cost_min,
+        cost_max=cost_max,
+        latency_min=latency_min,
+        latency_max=latency_max,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        limit=limit,
+        offset=offset,
+    )
+
+    return {
+        "queries": queries,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "filters": {
+            "hours": hours,
+            "complexities": complexity_list,
+            "success_status": success_status,
+            "cost_range": [cost_min, cost_max] if cost_min or cost_max else None,
+            "latency_range": [latency_min, latency_max] if latency_min or latency_max else None,
+        },
+    }
+
+
+@app.get("/api/v1/analytics/costs/by-user/filtered")
+async def get_filtered_user_costs(
+    days: int = Query(30, ge=1),
+    cost_min: float = Query(None),
+    cost_max: float = Query(None),
+    sort_by: str = Query("cost", regex="^(cost|user)$"),
+    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+):
+    """Get filtered user costs with pagination."""
+    cost_analytics = get_cost_analytics()
+    users, total = cost_analytics.filter_users_by_cost(
+        days=days,
+        cost_min=cost_min,
+        cost_max=cost_max,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        limit=limit,
+        offset=offset,
+    )
+
+    return {
+        "users": users,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "filters": {
+            "days": days,
+            "cost_range": [cost_min, cost_max] if cost_min or cost_max else None,
+        },
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
 

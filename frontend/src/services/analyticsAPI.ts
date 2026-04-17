@@ -76,6 +76,36 @@ export interface StreamingSessionsData {
   total_events: number;
 }
 
+export interface FilteredQuery {
+  query: string;
+  complexity: string;
+  success: boolean;
+  cost: number;
+  duration_ms: number;
+  timestamp: string;
+}
+
+export interface FilteredQueryResponse {
+  queries: FilteredQuery[];
+  total: number;
+  limit: number;
+  offset: number;
+  filters: Record<string, any>;
+}
+
+export interface FilteredUserCost {
+  user: string;
+  cost: number;
+}
+
+export interface FilteredUserCostsResponse {
+  users: FilteredUserCost[];
+  total: number;
+  limit: number;
+  offset: number;
+  filters: Record<string, any>;
+}
+
 class AnalyticsAPIClient {
   private baseURL: string;
 
@@ -161,6 +191,55 @@ class AnalyticsAPIClient {
   // Streaming Analytics
   async getStreamingSessionsAnalytics(hours: number = 24): Promise<StreamingSessionsData> {
     return this.fetch("/api/v1/analytics/streaming/sessions", { hours });
+  }
+
+  // Filtered Analytics (Phase 5)
+  async getFilteredQueries(
+    hours: number = 24,
+    complexities?: string[],
+    successStatus?: string,
+    costMin?: number,
+    costMax?: number,
+    latencyMin?: number,
+    latencyMax?: number,
+    sortBy?: string,
+    sortOrder?: string,
+    limit?: number,
+    offset?: number
+  ): Promise<FilteredQueryResponse> {
+    return this.fetch("/api/v1/analytics/queries/filtered", {
+      hours,
+      complexities: complexities?.join(","),
+      success_status: successStatus,
+      cost_min: costMin,
+      cost_max: costMax,
+      latency_min: latencyMin,
+      latency_max: latencyMax,
+      sort_by: sortBy,
+      sort_order: sortOrder,
+      limit,
+      offset,
+    });
+  }
+
+  async getFilteredUserCosts(
+    days: number = 30,
+    costMin?: number,
+    costMax?: number,
+    sortBy?: string,
+    sortOrder?: string,
+    limit?: number,
+    offset?: number
+  ): Promise<FilteredUserCostsResponse> {
+    return this.fetch("/api/v1/analytics/costs/by-user/filtered", {
+      days,
+      cost_min: costMin,
+      cost_max: costMax,
+      sort_by: sortBy,
+      sort_order: sortOrder,
+      limit,
+      offset,
+    });
   }
 }
 
