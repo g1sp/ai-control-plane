@@ -20,6 +20,7 @@ import PerformanceAnalytics from "../components/PerformanceAnalytics";
 import StreamingAnalytics from "../components/StreamingAnalytics";
 import ReportGenerator from "../components/ReportGenerator";
 import FilterPanel from "../components/FilterPanel";
+import FilterBadges from "../components/FilterBadges";
 import { useFilters } from "../hooks/useFilters";
 import { TimeRange } from "../types/analytics";
 
@@ -77,8 +78,9 @@ const DashboardContent: React.FC = () => {
       </div>
 
       {/* Filter Panel */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
         <FilterPanel availableUsers={[]} availableTools={[]} />
+        <FilterBadges />
       </div>
 
       {/* Content */}
