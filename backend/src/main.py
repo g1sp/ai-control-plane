@@ -25,6 +25,7 @@ from .integrations.claude import ClaudeClient
 from .utils.logger import logger
 from .agents.engine import AgentExecutor
 from .agents.models import AgentRequest as AgentRequestModel
+from .agents.session import get_session_manager, SessionStatus
 from .tools.registry import ToolRegistry
 from .policies.approval import ToolApprovalEngine
 from .policies.restrictions import ToolRestrictionsManager
@@ -721,6 +722,237 @@ async def stream_session_history(session_id: str):
         raise HTTPException(status_code=404, detail="Session not found")
 
     return session.to_dict()
+
+
+# Phase 3: Agent Session Management (Multi-Turn Conversations)
+
+@app.post("/agent/session/create")
+async def create_session(
+    user_id: str = Query(...),
+    goal: str = Query(...),
+    budget_usd: float = Query(1.0),
+    db: Session = Depends(get_db),
+):
+    """Create a new agent session for multi-turn conversations."""
+    # Validate user via policy engine
+    policy_engine = PolicyEngine(db)
+    query_request = QueryRequest(prompt=goal, user_id=user_id)
+    policy_decision = policy_engine.evaluate(query_request)
+
+    if not policy_decision.approved:
+        raise HTTPException(
+            status_code=403,
+            detail={"error": "policy_violation", "reason": policy_decision.reason},
+        )
+
+    session_manager = get_session_manager()
+    session_id = session_manager.create_session(user_id, goal, budget_usd)
+
+    logger.info(f"Created session {session_id} for {user_id}")
+
+    return {
+        "session_id": session_id,
+        "user_id": user_id,
+        "goal": goal,
+        "budget_usd": budget_usd,
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat(),
+    }
+
+
+@app.get("/agent/session/{session_id}")
+async def get_session(session_id: str):
+    """Get session details."""
+    session_manager = get_session_manager()
+    session = session_manager.get_session(session_id)
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return {
+        "session_id": session_id,
+        "status": session.status.value,
+        "completed_turns": session.completed_turns,
+        "max_turns": session.max_turns,
+        "spent_usd": session.context.spent_usd,
+        "remaining_budget": session.context.get_remaining_budget(),
+        "message_count": len(session.context.messages),
+        "tool_calls": len(session.context.tool_history),
+        "created_at": session.created_at.isoformat(),
+        "is_active": session.is_active(),
+    }
+
+
+@app.post("/agent/session/{session_id}/execute")
+async def execute_in_session(
+    session_id: str,
+    request: AgentRequestBody,
+    db: Session = Depends(get_db),
+):
+    """Execute agent within a session context."""
+    session_manager = get_session_manager()
+    session = session_manager.get_session(session_id)
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    if not session.is_active():
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "session_inactive", "reason": f"Session status: {session.status.value}"},
+        )
+
+    if not session.start_turn():
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "cannot_start_turn", "reason": "Session at max turns or budget exceeded"},
+        )
+
+    try:
+        # Add user message to context
+        session.context.add_message("user", request.goal)
+
+        # Execute agent (same as /agent/run)
+        agent_request = AgentRequestModel(
+            goal=request.goal,
+            user_id=session.user_id,
+            budget_usd=session.context.get_remaining_budget(),
+            context=request.context,
+            max_iterations=request.max_iterations,
+            timeout_seconds=request.timeout_seconds,
+        )
+
+        agent = get_agent_executor()
+        result = await agent.run(agent_request)
+
+        # Record in session context
+        session.context.add_message("assistant", result.final_response, cost=result.total_cost_usd)
+
+        # Update session with execution info
+        session.end_turn()
+
+        logger.info(f"Executed turn {session.completed_turns} in session {session_id}")
+
+        # Return result with session context
+        return {
+            "result": {
+                "agent_id": result.agent_id,
+                "status": result.status,
+                "final_response": result.final_response,
+                "total_cost_usd": result.total_cost_usd,
+                "duration_ms": result.duration_ms,
+            },
+            "session": {
+                "session_id": session_id,
+                "completed_turns": session.completed_turns,
+                "spent_usd": session.context.spent_usd,
+                "remaining_budget": session.context.get_remaining_budget(),
+                "status": session.status.value,
+            },
+        }
+
+    except Exception as e:
+        session.end_turn()
+        logger.error(f"Error executing in session {session_id}: {str(e)}")
+        raise HTTPException(status_code=503, detail={"error": "execution_failed", "reason": str(e)})
+
+
+@app.get("/agent/session/{session_id}/history")
+async def get_session_history(session_id: str):
+    """Get conversation history for session."""
+    session_manager = get_session_manager()
+    session = session_manager.get_session(session_id)
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return {
+        "session_id": session_id,
+        "goal": session.goal,
+        "status": session.status.value,
+        "completed_turns": session.completed_turns,
+        "total_messages": len(session.context.messages),
+        "spent_usd": session.context.spent_usd,
+        "budget_usd": session.context.budget_usd,
+        "messages": [m.to_dict() for m in session.context.messages],
+        "tools_used": session.context.tool_history,
+    }
+
+
+@app.post("/agent/session/{session_id}/pause")
+async def pause_session(session_id: str):
+    """Pause a session."""
+    session_manager = get_session_manager()
+
+    if not session_manager.pause_session(session_id):
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    session = session_manager.get_session(session_id)
+    return {
+        "session_id": session_id,
+        "status": session.status.value,
+        "paused_at": datetime.utcnow().isoformat(),
+    }
+
+
+@app.post("/agent/session/{session_id}/resume")
+async def resume_session(session_id: str):
+    """Resume a paused session."""
+    session_manager = get_session_manager()
+
+    if not session_manager.resume_session(session_id):
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "cannot_resume", "reason": "Session not found or not paused"},
+        )
+
+    session = session_manager.get_session(session_id)
+    return {
+        "session_id": session_id,
+        "status": session.status.value,
+        "resumed_at": datetime.utcnow().isoformat(),
+    }
+
+
+@app.delete("/agent/session/{session_id}")
+async def terminate_session(session_id: str, reason: str = Query("User terminated")):
+    """Terminate a session."""
+    session_manager = get_session_manager()
+
+    if not session_manager.terminate_session(session_id, reason):
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    session = session_manager.get_session(session_id)
+    return {
+        "session_id": session_id,
+        "status": session.status.value,
+        "terminated_at": datetime.utcnow().isoformat(),
+        "total_turns": session.completed_turns,
+        "total_cost": session.context.spent_usd,
+    }
+
+
+@app.get("/agent/sessions")
+async def list_user_sessions(user_id: str = Query(...)):
+    """List all sessions for a user."""
+    session_manager = get_session_manager()
+    sessions = session_manager.list_user_sessions(user_id)
+
+    return {
+        "user_id": user_id,
+        "total_sessions": len(sessions),
+        "sessions": [
+            {
+                "session_id": s.session_id,
+                "goal": s.goal,
+                "status": s.status.value,
+                "completed_turns": s.completed_turns,
+                "spent_usd": s.context.spent_usd,
+                "created_at": s.created_at.isoformat(),
+            }
+            for s in sessions
+        ],
+    }
 
 
 if __name__ == "__main__":
