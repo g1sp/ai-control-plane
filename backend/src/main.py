@@ -2,6 +2,7 @@
 
 import time
 import uuid
+import asyncio
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,6 +37,11 @@ from .services.analytics import (
     get_cost_analytics,
     get_performance_analytics,
     get_streaming_analytics,
+)
+from .services.metrics_stream import (
+    get_metrics_manager,
+    get_analytics_metrics,
+    MetricsStreamEvent,
 )
 
 # Initialize database
@@ -1095,6 +1101,67 @@ def get_streaming_sessions_analytics_endpoint(hours: int = Query(24, ge=1, le=72
     """Get streaming session analytics."""
     analytics = get_streaming_analytics()
     return analytics.get_session_stats(hours)
+
+
+# Real-Time Metrics Streaming (Phase 6)
+
+@app.websocket("/api/v1/analytics/stream/{user_id}")
+async def websocket_metrics_stream(websocket: WebSocket, user_id: str):
+    """WebSocket endpoint for real-time analytics metrics streaming."""
+    await websocket.accept()
+    metrics_manager = get_metrics_manager()
+
+    try:
+        queue = metrics_manager.subscribe(user_id)
+
+        # Send recent history first
+        for event in metrics_manager.get_history(limit=10):
+            await websocket.send_json(event.to_dict())
+
+        # Stream new events
+        while True:
+            try:
+                event = await asyncio.wait_for(queue.get(), timeout=60)
+                await websocket.send_json(event.to_dict())
+            except asyncio.TimeoutError:
+                # Send keepalive ping
+                await websocket.send_json({
+                    "type": "keepalive",
+                    "timestamp": datetime.utcnow().isoformat(),
+                })
+
+    except WebSocketDisconnect:
+        metrics_manager.unsubscribe(user_id, queue)
+        logger.info(f"Metrics stream disconnected: {user_id}")
+    except Exception as e:
+        logger.error(f"Metrics stream error: {e}")
+        await websocket.close(code=1011, reason=str(e))
+
+
+@app.get("/api/v1/analytics/metrics/history")
+async def get_metrics_history(limit: int = Query(50, ge=1, le=500)):
+    """Get recent metrics stream history."""
+    metrics_manager = get_metrics_manager()
+    history = metrics_manager.get_history(limit=limit)
+
+    return {
+        "events": [event.to_dict() for event in history],
+        "total": len(history),
+        "subscriber_count": metrics_manager.get_subscriber_count(),
+    }
+
+
+@app.get("/api/v1/analytics/metrics/status")
+async def get_metrics_status():
+    """Get metrics stream status."""
+    metrics_manager = get_metrics_manager()
+
+    return {
+        "active_subscribers": metrics_manager.get_subscriber_count(),
+        "history_size": len(metrics_manager.event_history),
+        "status": "active",
+        "timestamp": datetime.utcnow().isoformat(),
+    }
 
 
 # Filtered Analytics Endpoints (Phase 5)
