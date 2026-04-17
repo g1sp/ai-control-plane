@@ -1,0 +1,185 @@
+<svg viewBox="0 0 1400 1200" xmlns="http://www.w3.org/2000/svg" width="1400" height="1200">
+  <defs>
+    <style>
+      .phase-box { fill: #0f3460; opacity: 0.9; rx: 8; }
+      .phase-text-title { font-size: 16px; font-weight: bold; fill: white; text-anchor: middle; }
+      .phase-text-main { font-size: 12px; fill: white; text-anchor: middle; }
+      .phase-text-sub { font-size: 10px; fill: #b0b0ff; text-anchor: middle; }
+      .arrow { stroke: #0f3460; stroke-width: 2; fill: none; }
+      .results-box { rx: 8; fill: #d4edda; opacity: 0.85; }
+      .results-text-big { font-size: 32px; font-weight: bold; fill: #155724; text-anchor: middle; }
+      .results-text { font-size: 16px; font-weight: 600; fill: #155724; text-anchor: middle; }
+      .results-text-small { font-size: 12px; fill: #1e7e34; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1400" height="1200" fill="#f5f5f5"/>
+  <rect width="1400" height="1200" fill="#ffffff" opacity="0.5"/>
+
+  <!-- Hero Section -->
+  <rect x="50" y="30" width="1300" height="220" rx="12" fill="#fffef0" opacity="0.95" stroke="#c9a961" stroke-width="3"/>
+
+  <!-- Cheshire Cat Quote Section -->
+  <text x="250" y="95" style="font-size: 20px; font-weight: bold; fill: #333; font-family: Georgia, serif;">
+    "Where should I go?" — Alice
+  </text>
+  <text x="250" y="125" style="font-size: 18px; fill: #0f3460; font-family: Georgia, serif; font-style: italic;">
+    "That depends on where you want to end up."
+  </text>
+  <text x="250" y="155" style="font-size: 18px; fill: #0f3460; font-family: Georgia, serif; font-style: italic;">
+    "If you don't care where you're going..."
+  </text>
+  <text x="250" y="185" style="font-size: 18px; font-weight: bold; fill: #0f3460; font-family: Georgia, serif; font-style: italic;">
+    "...then it doesn't matter which way you go." — Cheshire Cat
+  </text>
+
+  <!-- Subtitle -->
+  <text x="700" y="240" style="font-size: 18px; text-anchor: middle; fill: #666; font-weight: 600;">
+    We Knew Our Destination. Here's The Path We Took.
+  </text>
+
+  <!-- Divider -->
+  <line x1="50" y1="270" x2="1350" y2="270" stroke="#e0e0e0" stroke-width="2"/>
+
+  <!-- Phase 1 -->
+  <rect x="50" y="310" width="150" height="110" rx="8" fill="#1a1a2e" opacity="0.9"/>
+  <text x="125" y="335" class="phase-text-title">Phase 1</text>
+  <text x="125" y="355" class="phase-text-main">Policy Gateway</text>
+  <text x="125" y="370" class="phase-text-sub">Foundation</text>
+  <text x="125" y="385" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">Policy, Audit,</text>
+  <text x="125" y="398" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">Cost Tracking</text>
+
+  <!-- Arrow 1 -->
+  <path d="M 210 365 L 260 365" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Phase 2 -->
+  <rect x="270" y="310" width="150" height="110" rx="8" fill="#0f3460" opacity="0.9"/>
+  <text x="345" y="335" class="phase-text-title">Phase 2</text>
+  <text x="345" y="355" class="phase-text-main">Agent Lab</text>
+  <text x="345" y="370" class="phase-text-sub">Orchestration</text>
+  <text x="345" y="385" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">Tool Execution,</text>
+  <text x="345" y="398" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">Security</text>
+
+  <!-- Arrow 2 -->
+  <path d="M 430 365 L 480 365" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Phase 3 -->
+  <rect x="490" y="310" width="150" height="110" rx="8" fill="#1a1a2e" opacity="0.9"/>
+  <text x="565" y="335" class="phase-text-title">Phase 3</text>
+  <text x="565" y="355" class="phase-text-main">Streaming</text>
+  <text x="565" y="370" class="phase-text-sub">Infrastructure</text>
+  <text x="565" y="385" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">Pub/Sub,</text>
+  <text x="565" y="398" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">WebSocket</text>
+
+  <!-- Arrow 3 -->
+  <path d="M 650 365 L 700 365" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Phase 4 -->
+  <rect x="710" y="310" width="150" height="110" rx="8" fill="#0f3460" opacity="0.9"/>
+  <text x="785" y="335" class="phase-text-title">Phase 4</text>
+  <text x="785" y="355" class="phase-text-main">Analytics</text>
+  <text x="785" y="370" class="phase-text-sub">Foundation</text>
+  <text x="785" y="385" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">Query, User,</text>
+  <text x="785" y="398" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">Performance</text>
+
+  <!-- Arrow 4 -->
+  <path d="M 870 365 L 920 365" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Phase 5 -->
+  <rect x="930" y="310" width="150" height="110" rx="8" fill="#1a1a2e" opacity="0.9"/>
+  <text x="1005" y="335" class="phase-text-title">Phase 5</text>
+  <text x="1005" y="355" class="phase-text-main">Dashboard</text>
+  <text x="1005" y="370" class="phase-text-sub">Interactive</text>
+  <text x="1005" y="385" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">Filters, Drill-down,</text>
+  <text x="1005" y="398" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">Real-time</text>
+
+  <!-- Arrow 5 -->
+  <path d="M 1090 365 L 1140 365" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Phase 6 -->
+  <rect x="1150" y="310" width="150" height="110" rx="8" fill="#0f3460" opacity="0.9"/>
+  <text x="1225" y="335" class="phase-text-title">Phase 6</text>
+  <text x="1225" y="355" class="phase-text-main">Real-Time</text>
+  <text x="1225" y="370" class="phase-text-sub">WebSocket</text>
+  <text x="1225" y="385" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">Live Updates,</text>
+  <text x="1225" y="398" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">Alerts</text>
+
+  <!-- Arrow down -->
+  <path d="M 1225 420 L 1225 460" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Phase 7 -->
+  <rect x="1150" y="470" width="150" height="110" rx="8" fill="#1a1a2e" opacity="0.9"/>
+  <text x="1225" y="495" class="phase-text-title">Phase 7</text>
+  <text x="1225" y="515" class="phase-text-main">Alerts</text>
+  <text x="1225" y="530" class="phase-text-sub">Multi-Channel</text>
+  <text x="1225" y="545" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">Email/Slack/</text>
+  <text x="1225" y="558" style="font-size: 9px; fill: #d0d0ff; text-anchor: middle;">PagerDuty</text>
+
+  <!-- Destination Box -->
+  <rect x="150" y="650" width="1100" height="200" rx="12" fill="none" stroke="#0f3460" stroke-width="3" stroke-dasharray="10,5"/>
+  <text x="700" y="690" style="font-size: 32px; font-weight: bold; text-anchor: middle; fill: #0f3460;">
+    ✓ DESTINATION REACHED
+  </text>
+
+  <!-- Results Grid -->
+  <!-- Box 1: LOC -->
+  <rect x="170" y="715" width="220" height="110" class="results-box"/>
+  <text x="280" y="745" class="results-text-big">5000+</text>
+  <text x="280" y="770" class="results-text">Lines of Code</text>
+  <text x="280" y="795" class="results-text-small">Backend + Frontend</text>
+  <text x="280" y="810" style="font-size: 11px; fill: #1e7e34; text-anchor: middle;">Python, React, TypeScript</text>
+
+  <!-- Box 2: Tests -->
+  <rect x="420" y="715" width="220" height="110" class="results-box"/>
+  <text x="530" y="745" class="results-text-big">467+</text>
+  <text x="530" y="770" class="results-text">Comprehensive Tests</text>
+  <text x="530" y="795" class="results-text-small">100% Pass Rate</text>
+  <text x="530" y="810" style="font-size: 11px; fill: #1e7e34; text-anchor: middle;">pytest + Jest</text>
+
+  <!-- Box 3: Status -->
+  <rect x="670" y="715" width="220" height="110" class="results-box"/>
+  <text x="780" y="745" class="results-text-big">v1.0.0</text>
+  <text x="780" y="770" class="results-text">Production Ready</text>
+  <text x="780" y="795" class="results-text-small">Shipped and Deployed</text>
+  <text x="780" y="810" style="font-size: 11px; fill: #1e7e34; text-anchor: middle;">April 2026</text>
+
+  <!-- Box 4: Phases -->
+  <rect x="920" y="715" width="220" height="110" class="results-box"/>
+  <text x="1030" y="745" class="results-text-big">7</text>
+  <text x="1030" y="770" class="results-text">Integrated Phases</text>
+  <text x="1030" y="795" class="results-text-small">Each building on previous</text>
+  <text x="1030" y="810" style="font-size: 11px; fill: #1e7e34; text-anchor: middle;">Zero shortcuts</text>
+
+  <!-- Key Insight Section -->
+  <rect x="80" y="900" width="1240" height="240" rx="8" fill="#fff3cd" opacity="0.92" stroke="#856404" stroke-width="2"/>
+  <text x="700" y="935" style="font-size: 24px; font-weight: bold; text-anchor: middle; fill: #333;">
+    The Lesson: Knowing Your Destination Changes Everything
+  </text>
+
+  <!-- Insight bullets -->
+  <circle cx="120" cy="980" r="5" fill="#0f3460"/>
+  <text x="140" y="985" style="font-size: 15px; fill: #333;">Not random sprints — Each phase had a purpose</text>
+
+  <circle cx="120" cy="1020" r="5" fill="#0f3460"/>
+  <text x="140" y="1025" style="font-size: 15px; fill: #333;">Not slow — Structured execution is faster than refactoring</text>
+
+  <circle cx="120" cy="1060" r="5" fill="#0f3460"/>
+  <text x="140" y="1065" style="font-size: 15px; fill: #333;">Not over-engineered — Just enough, built to last</text>
+
+  <circle cx="120" cy="1100" r="5" fill="#0f3460"/>
+  <text x="140" y="1105" style="font-size: 15px; fill: #333;">Not theoretical — Production code shipped every phase</text>
+
+  <!-- CTA -->
+  <rect x="200" y="1130" width="1000" height="50" rx="8" fill="#0f3460" opacity="0.9"/>
+  <text x="700" y="1165" style="font-size: 16px; font-weight: bold; text-anchor: middle; fill: white;">
+    github.com/g1sp/ai-control-plane • Where did you want to end up? ✓
+  </text>
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#0f3460"/>
+    </marker>
+  </defs>
+</svg>
