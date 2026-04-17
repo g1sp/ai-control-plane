@@ -2,7 +2,7 @@
  * Main Dashboard page
  */
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   useQueryAnalytics,
   useAllUsersMetrics,
@@ -19,16 +19,19 @@ import CostAnalytics from "../components/CostAnalytics";
 import PerformanceAnalytics from "../components/PerformanceAnalytics";
 import StreamingAnalytics from "../components/StreamingAnalytics";
 import ReportGenerator from "../components/ReportGenerator";
+import FilterPanel from "../components/FilterPanel";
+import { useFilters } from "../hooks/useFilters";
 import { TimeRange } from "../types/analytics";
 
-export const Dashboard: React.FC = () => {
-  const [timeRange, setTimeRange] = useState<TimeRange>("24h");
+const DashboardContent: React.FC = () => {
+  const filters = useFilters();
   const [tab, setTab] = useState<"overview" | "queries" | "users" | "tools" | "costs" | "performance" | "streaming" | "reports">(
     "overview"
   );
 
-  // Convert time range to hours
-  const hours = timeRange === "1h" ? 1 : timeRange === "24h" ? 24 : timeRange === "7d" ? 168 : 720;
+  // Convert time preset to hours (for backward compatibility)
+  const timePreset = filters.state.timePreset || "24h";
+  const hours = timePreset === "1h" ? 1 : timePreset === "24h" ? 24 : timePreset === "7d" ? 168 : 720;
 
   // Fetch analytics data
   const query = useQueryAnalytics(hours);
@@ -45,28 +48,9 @@ export const Dashboard: React.FC = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-              <p className="text-gray-600 mt-1">Monitor your AI gateway performance and usage</p>
-            </div>
-
-            {/* Time Range Selector */}
-            <div className="flex gap-2">
-              {(["1h", "24h", "7d", "30d"] as const).map((range) => (
-                <button
-                  key={range}
-                  onClick={() => setTimeRange(range)}
-                  className={`px-3 py-2 rounded text-sm font-medium transition ${
-                    timeRange === range
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  {range.toUpperCase()}
-                </button>
-              ))}
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <p className="text-gray-600 mt-1">Monitor your AI gateway performance and usage</p>
           </div>
         </div>
       </div>
@@ -90,6 +74,11 @@ export const Dashboard: React.FC = () => {
             ))}
           </nav>
         </div>
+      </div>
+
+      {/* Filter Panel */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <FilterPanel availableUsers={[]} availableTools={[]} />
       </div>
 
       {/* Content */}
@@ -167,6 +156,17 @@ export const Dashboard: React.FC = () => {
         )}
       </div>
     </div>
+  );
+};
+
+// Wrapper that provides FilterContext
+import { FilterProvider } from "../context/FilterContext";
+
+export const Dashboard: React.FC = () => {
+  return (
+    <FilterProvider>
+      <DashboardContent />
+    </FilterProvider>
   );
 };
 
