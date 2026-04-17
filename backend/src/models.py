@@ -1,7 +1,7 @@
 """Pydantic models for request/response validation."""
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
 
@@ -91,3 +91,102 @@ class SummaryStats(BaseModel):
     top_users: list[dict]
     violations: int
     average_cost_per_request: float
+
+
+# Phase 2: Agent Models (new)
+
+class AgentRequestBody(BaseModel):
+    """Request body for /agent/run endpoint."""
+    goal: str = Field(..., min_length=1, max_length=5000, description="Agent goal/task")
+    user_id: str = Field(..., min_length=1, max_length=100, description="User ID")
+    budget_usd: float = Field(default=1.0, ge=0.001, description="Budget limit in USD")
+    context: Optional[Dict[str, Any]] = Field(None, description="Additional context")
+    max_iterations: int = Field(default=10, ge=1, le=50, description="Max reasoning iterations")
+    timeout_seconds: int = Field(default=60, ge=5, le=600, description="Timeout in seconds")
+
+
+class ToolCallResponse(BaseModel):
+    """Tool call in execution trace."""
+    name: str
+    args: Dict[str, Any]
+    timestamp: datetime
+
+
+class ExecutionStepResponse(BaseModel):
+    """Step in execution trace."""
+    type: str  # thinking, tool_call, tool_result, done, error
+    content: str
+    tool_call: Optional[ToolCallResponse] = None
+    duration_ms: int = 0
+
+
+class AgentExecutionResponse(BaseModel):
+    """Response for agent execution."""
+    agent_id: str
+    request_id: str
+    user_id: str
+    goal: str
+    status: str  # completed, failed, timeout
+    final_response: str
+    execution_trace: List[ExecutionStepResponse]
+    tools_called: List[ToolCallResponse]
+    total_cost_usd: float
+    duration_ms: int
+    error_message: Optional[str] = None
+    timestamp: datetime
+
+
+class AgentExecutionHistoryItem(BaseModel):
+    """Single item in execution history."""
+    agent_id: str
+    request_id: str
+    goal: str
+    status: str
+    total_cost_usd: float
+    duration_ms: int
+    timestamp: datetime
+
+
+class AgentExecutionHistoryResponse(BaseModel):
+    """Response for agent execution history."""
+    user_id: str
+    total_executions: int
+    total_cost_usd: float
+    executions: List[AgentExecutionHistoryItem]
+
+
+class ToolApprovalRequestModel(BaseModel):
+    """Tool approval request item."""
+    approval_id: str
+    user_id: str
+    tool_name: str
+    args: Optional[Dict[str, Any]] = None
+    created_at: datetime
+    status: str  # pending, approved, rejected
+
+
+class PendingApprovalsResponse(BaseModel):
+    """Response for pending approvals list."""
+    total_pending: int
+    approvals: List[ToolApprovalRequestModel]
+
+
+class ApprovalDecisionRequest(BaseModel):
+    """Request to approve/reject a tool execution."""
+    decision: str = Field(..., description="approve or reject")
+    reason: Optional[str] = Field(None, description="Optional reason for decision")
+
+
+class ToolInfo(BaseModel):
+    """Information about a tool."""
+    name: str
+    description: str
+    enabled: bool
+    requires_approval: bool
+    input_schema: Dict[str, Any]
+
+
+class ToolsListResponse(BaseModel):
+    """Response for tools list."""
+    total_tools: int
+    tools: List[ToolInfo]

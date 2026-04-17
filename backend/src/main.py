@@ -2,14 +2,18 @@
 
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from .config import settings
 from .database import init_db, get_db
-from .models import QueryRequest, QueryResponse, ErrorResponse, HealthResponse
+from .models import (
+    QueryRequest, QueryResponse, ErrorResponse, HealthResponse,
+    AgentRequestBody, AgentExecutionResponse, AgentExecutionHistoryResponse,
+    PendingApprovalsResponse, ApprovalDecisionRequest, ToolsListResponse, ToolInfo
+)
 from .services.policy import PolicyEngine
 from .services.router import ModelRouter
 from .services.audit import AuditLogger
@@ -17,6 +21,11 @@ from .services.cost_calculator import CostCalculator
 from .integrations.ollama import OllamaClient
 from .integrations.claude import ClaudeClient
 from .utils.logger import logger
+from .agents.engine import AgentExecutor
+from .agents.models import AgentRequest as AgentRequestModel
+from .tools.registry import ToolRegistry
+from .policies.approval import ToolApprovalEngine
+from .policies.restrictions import ToolRestrictionsManager
 
 # Initialize database
 init_db()
@@ -40,6 +49,9 @@ app.add_middleware(
 # Global clients (initialized on first use)
 ollama_client = None
 claude_client = None
+tool_registry = None
+agent_executor = None
+restrictions_manager = None
 app_start_time = datetime.utcnow()
 
 
@@ -61,6 +73,83 @@ def get_claude_client():
             # API key not set, will fail on use
             pass
     return claude_client
+
+
+def get_tool_registry():
+    """Get or initialize tool registry."""
+    global tool_registry
+    if tool_registry is None:
+        from .tools.executors import HttpToolExecutor, PythonToolExecutor, SearchToolExecutor
+
+        tool_registry = ToolRegistry()
+
+        # Register built-in tools
+        tool_registry.register(
+            name="http_get",
+            func=HttpToolExecutor.http_get,
+            description="Make HTTP GET requests",
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "url": {"type": "string", "description": "URL to fetch"},
+                    "headers": {"type": "object", "description": "Optional headers"}
+                },
+                "required": ["url"]
+            }
+        )
+
+        tool_registry.register(
+            name="python_eval",
+            func=PythonToolExecutor.python_eval,
+            description="Execute Python code safely",
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "code": {"type": "string", "description": "Python code to execute"},
+                    "safe_mode": {"type": "boolean", "description": "Enable safety checks"}
+                },
+                "required": ["code"]
+            },
+            requires_approval=True
+        )
+
+        tool_registry.register(
+            name="search",
+            func=SearchToolExecutor.search,
+            description="Search for information",
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "Search query"},
+                    "limit": {"type": "integer", "description": "Max results"}
+                },
+                "required": ["query"]
+            }
+        )
+
+    return tool_registry
+
+
+def get_agent_executor():
+    """Get or initialize agent executor."""
+    global agent_executor
+    if agent_executor is None:
+        registry = get_tool_registry()
+        claude = get_claude_client()
+        agent_executor = AgentExecutor(
+            tool_registry=registry,
+            claude_client=claude,
+            model="claude-sonnet-4-6"
+        )
+    return agent_executor
+
+
+def get_restrictions_manager():
+    """Get or initialize restrictions manager."""
+    global restrictions_manager
+    if restrictions_manager is None:
+        restrictions_manager = ToolRestrictionsManager()
+    return restrictions_manager
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -285,6 +374,241 @@ async def get_info():
         "budget_per_user_per_day": settings.budget_per_user_per_day_usd,
         "rate_limit_per_minute": settings.rate_limit_req_per_minute,
     }
+
+
+# Phase 2: Agent Orchestration Endpoints
+
+@app.post("/agent/run", response_model=AgentExecutionResponse)
+async def run_agent(request: AgentRequestBody, db: Session = Depends(get_db)):
+    """Execute an agent with tool calling capability."""
+    request_id = str(uuid.uuid4())
+    start_time = time.time()
+
+    logger.info(f"Agent {request_id}: {request.user_id} -> {request.goal[:50]}...")
+
+    # Step 1: Validate user via policy engine
+    policy_engine = PolicyEngine(db)
+    query_request = QueryRequest(prompt=request.goal, user_id=request.user_id)
+    policy_decision = policy_engine.evaluate(query_request)
+
+    if not policy_decision.approved:
+        logger.warning(f"Agent {request_id}: user rejected by policy: {policy_decision.reason}")
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "policy_violation",
+                "reason": policy_decision.reason,
+                "request_id": request_id,
+            },
+        )
+
+    # Step 2: Check tool restrictions
+    restrictions = get_restrictions_manager()
+    # Verify agent can use tools (basic check - all tools available in Phase 2)
+
+    # Step 3: Create agent request
+    agent_request = AgentRequestModel(
+        goal=request.goal,
+        user_id=request.user_id,
+        budget_usd=request.budget_usd,
+        context=request.context,
+        max_iterations=request.max_iterations,
+        timeout_seconds=request.timeout_seconds,
+    )
+
+    # Step 4: Execute agent
+    agent = get_agent_executor()
+    try:
+        result = await agent.run(agent_request)
+    except Exception as e:
+        logger.error(f"Agent {request_id}: execution failed: {str(e)}")
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "agent_execution_failed",
+                "reason": str(e),
+                "request_id": request_id,
+            },
+        )
+
+    # Step 5: Log execution in audit trail
+    audit_logger = AuditLogger(db)
+    duration_ms = int((time.time() - start_time) * 1000)
+
+    # Create audit record for agent execution
+    from .database import AgentExecution
+    agent_execution = AgentExecution(
+        agent_id=result.agent_id,
+        request_id=result.request_id,
+        user_id=result.user_id,
+        goal=result.goal,
+        status=result.status,
+        final_response=result.final_response,
+        execution_trace=[step.model_dump() for step in result.execution_trace],
+        tools_called=[tool.model_dump() for tool in result.tools_called],
+        total_cost_usd=result.total_cost_usd,
+        duration_ms=result.duration_ms,
+        error_message=result.error_message,
+    )
+    db.add(agent_execution)
+    db.commit()
+
+    logger.info(
+        f"Agent {request_id}: {result.status} "
+        f"({result.duration_ms}ms, ${result.total_cost_usd}, "
+        f"{len(result.tools_called)} tools)"
+    )
+
+    # Return execution response
+    from .models import ExecutionStepResponse, ToolCallResponse
+
+    return AgentExecutionResponse(
+        agent_id=result.agent_id,
+        request_id=result.request_id,
+        user_id=result.user_id,
+        goal=result.goal,
+        status=result.status,
+        final_response=result.final_response,
+        execution_trace=[
+            ExecutionStepResponse(
+                type=step.type,
+                content=step.content,
+                tool_call=ToolCallResponse(
+                    name=step.tool_call.name,
+                    args=step.tool_call.args,
+                    timestamp=step.tool_call.timestamp,
+                ) if step.tool_call else None,
+                duration_ms=step.duration_ms,
+            )
+            for step in result.execution_trace
+        ],
+        tools_called=[
+            ToolCallResponse(
+                name=tool.name,
+                args=tool.args,
+                timestamp=tool.timestamp,
+            )
+            for tool in result.tools_called
+        ],
+        total_cost_usd=result.total_cost_usd,
+        duration_ms=result.duration_ms,
+        error_message=result.error_message,
+        timestamp=datetime.utcnow(),
+    )
+
+
+@app.get("/agent/executions", response_model=AgentExecutionHistoryResponse)
+async def get_agent_executions(
+    user: str = Query(...),
+    hours: int = Query(24, ge=1, le=168),
+    limit: int = Query(100, ge=1, le=1000),
+    db: Session = Depends(get_db),
+):
+    """Get agent execution history for a user."""
+    from .database import AgentExecution
+    from sqlalchemy import desc
+
+    cutoff = datetime.utcnow() - timedelta(hours=hours)
+    executions = db.query(AgentExecution).filter(
+        AgentExecution.user_id == user,
+        AgentExecution.timestamp >= cutoff,
+    ).order_by(desc(AgentExecution.timestamp)).limit(limit).all()
+
+    from .models import AgentExecutionHistoryItem
+
+    return AgentExecutionHistoryResponse(
+        user_id=user,
+        total_executions=len(executions),
+        total_cost_usd=sum(e.total_cost_usd for e in executions),
+        executions=[
+            AgentExecutionHistoryItem(
+                agent_id=e.agent_id,
+                request_id=e.request_id,
+                goal=e.goal,
+                status=e.status,
+                total_cost_usd=e.total_cost_usd,
+                duration_ms=e.duration_ms,
+                timestamp=e.timestamp,
+            )
+            for e in executions
+        ],
+    )
+
+
+@app.get("/agent/approvals", response_model=PendingApprovalsResponse)
+async def get_pending_approvals(
+    db: Session = Depends(get_db),
+):
+    """Get pending tool approval requests."""
+    approval_engine = ToolApprovalEngine(db)
+    pending = approval_engine.get_pending_approvals(limit=100)
+
+    from .models import ToolApprovalRequestModel
+
+    return PendingApprovalsResponse(
+        total_pending=len(pending),
+        approvals=[
+            ToolApprovalRequestModel(
+                approval_id=p.approval_id,
+                user_id=p.user_id,
+                tool_name=p.tool_name,
+                args=p.args,
+                created_at=p.created_at,
+                status="pending",
+            )
+            for p in pending
+        ],
+    )
+
+
+@app.post("/agent/approve/{approval_id}")
+async def approve_tool_execution(
+    approval_id: str,
+    decision_request: ApprovalDecisionRequest,
+    db: Session = Depends(get_db),
+):
+    """Approve a tool execution request."""
+    approval_engine = ToolApprovalEngine(db)
+
+    if decision_request.decision.lower() == "approve":
+        success = approval_engine.approve(approval_id, "admin")
+    else:
+        success = approval_engine.reject(approval_id, "admin")
+
+    if not success:
+        raise HTTPException(status_code=404, detail="Approval not found")
+
+    return {
+        "approval_id": approval_id,
+        "decision": decision_request.decision,
+        "reason": decision_request.reason,
+        "status": "processed",
+    }
+
+
+@app.get("/tools", response_model=ToolsListResponse)
+async def list_tools():
+    """List available tools."""
+    registry = get_tool_registry()
+    restrictions = get_restrictions_manager()
+
+    tools = []
+    for tool_def in registry.get_tool_definitions():
+        restriction = restrictions.get_restriction(tool_def["name"])
+        tools.append(
+            ToolInfo(
+                name=tool_def["name"],
+                description=tool_def["description"],
+                enabled=restriction.enabled if restriction else False,
+                requires_approval=registry._tools[tool_def["name"]]["requires_approval"],
+                input_schema=tool_def["input_schema"],
+            )
+        )
+
+    return ToolsListResponse(
+        total_tools=len(tools),
+        tools=tools,
+    )
 
 
 if __name__ == "__main__":
