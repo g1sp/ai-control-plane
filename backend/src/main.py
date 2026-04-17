@@ -29,6 +29,14 @@ from .agents.session import get_session_manager, SessionStatus
 from .tools.registry import ToolRegistry
 from .policies.approval import ToolApprovalEngine
 from .policies.restrictions import ToolRestrictionsManager
+from .services.analytics import (
+    get_query_analytics,
+    get_user_analytics,
+    get_tool_analytics,
+    get_cost_analytics,
+    get_performance_analytics,
+    get_streaming_analytics,
+)
 
 # Initialize database
 init_db()
@@ -953,6 +961,140 @@ async def list_user_sessions(user_id: str = Query(...)):
             for s in sessions
         ],
     }
+
+
+
+# ============================================================================
+# ANALYTICS ENDPOINTS
+# ============================================================================
+
+@app.get("/api/v1/analytics/queries")
+def get_query_analytics_endpoint(hours: int = Query(24, ge=1, le=720)) -> dict:
+    """Get query analytics (complexity distribution, success rate)."""
+    analytics = get_query_analytics()
+    return {
+        "complexity_distribution": analytics.get_complexity_distribution(hours),
+        "success_rate": analytics.get_success_rate(hours),
+        "avg_latency_by_complexity": analytics.get_avg_latency_by_complexity(hours),
+        "total_cost": analytics.get_total_cost(hours),
+        "avg_cost_per_query": analytics.get_avg_cost_per_query(hours),
+    }
+
+
+@app.get("/api/v1/analytics/queries/trends")
+def get_query_trends_endpoint(hours: int = Query(24, ge=1, le=720)) -> dict:
+    """Get query trends over time."""
+    analytics = get_query_analytics()
+    return {
+        "success_rate": analytics.get_success_rate(hours),
+        "avg_latency": analytics.get_avg_latency_by_complexity(hours),
+        "cost_trends": {
+            "total": analytics.get_total_cost(hours),
+            "avg_per_query": analytics.get_avg_cost_per_query(hours),
+        }
+    }
+
+
+@app.get("/api/v1/analytics/users")
+def get_all_users_analytics_endpoint(hours: int = Query(24, ge=1, le=720)) -> dict:
+    """Get analytics for all users."""
+    analytics = get_user_analytics()
+    metrics = analytics.get_all_users_metrics(hours)
+    return {
+        "users": metrics,
+        "total_users": len(metrics),
+        "top_users": dict(analytics.get_top_users_by_spending(hours, limit=10)),
+    }
+
+
+@app.get("/api/v1/analytics/users/{user_id}")
+def get_user_analytics_endpoint(user_id: str, hours: int = Query(24, ge=1, le=720)) -> dict:
+    """Get analytics for specific user."""
+    analytics = get_user_analytics()
+    return {
+        "user_id": user_id,
+        "metrics": analytics.get_user_metrics(user_id, hours),
+        "spending_trend": analytics.get_user_spending_trend(user_id, days=7),
+    }
+
+
+@app.get("/api/v1/analytics/tools")
+def get_all_tools_analytics_endpoint(hours: int = Query(24, ge=1, le=720)) -> dict:
+    """Get analytics for all tools."""
+    analytics = get_tool_analytics()
+    stats = analytics.get_all_tools_stats(hours)
+    return {
+        "tools": stats,
+        "total_tools": len(stats),
+        "rankings": dict(analytics.get_tool_rankings(hours)),
+    }
+
+
+@app.get("/api/v1/analytics/tools/{tool_name}")
+def get_tool_analytics_endpoint(tool_name: str, hours: int = Query(24, ge=1, le=720)) -> dict:
+    """Get analytics for specific tool."""
+    analytics = get_tool_analytics()
+    return {
+        "tool_name": tool_name,
+        "stats": analytics.get_tool_stats(tool_name, hours),
+    }
+
+
+@app.get("/api/v1/analytics/costs/daily")
+def get_daily_costs_endpoint(days: int = Query(30, ge=1, le=365)) -> dict:
+    """Get daily cost breakdown."""
+    analytics = get_cost_analytics()
+    daily = analytics.get_daily_costs(days)
+    return {
+        "daily_costs": daily,
+        "total_cost": analytics.get_total_cost(days),
+        "avg_daily_cost": analytics.get_avg_daily_cost(days),
+    }
+
+
+@app.get("/api/v1/analytics/costs/forecast")
+def get_cost_forecast_endpoint(days_ahead: int = Query(7, ge=1, le=90), lookback_days: int = Query(30, ge=1, le=365)) -> dict:
+    """Get cost forecast."""
+    analytics = get_cost_analytics()
+    forecast = analytics.forecast_cost(days_ahead, lookback_days)
+    return {
+        "days_ahead": days_ahead,
+        "forecast": forecast,
+        "daily_average": analytics.get_avg_daily_cost(lookback_days),
+    }
+
+
+@app.get("/api/v1/analytics/costs/by-user")
+def get_costs_by_user_endpoint(days: int = Query(30, ge=1, le=365)) -> dict:
+    """Get top cost users."""
+    analytics = get_cost_analytics()
+    return {
+        "top_users": [{"user": u, "cost": c} for u, c in analytics.get_top_cost_users(days, limit=20)],
+    }
+
+
+@app.get("/api/v1/analytics/performance/latency")
+def get_latency_analytics_endpoint() -> dict:
+    """Get latency performance metrics."""
+    analytics = get_performance_analytics()
+    return analytics.get_latency_percentiles()
+
+
+@app.get("/api/v1/analytics/performance/throughput")
+def get_throughput_analytics_endpoint() -> dict:
+    """Get throughput metrics."""
+    analytics = get_performance_analytics()
+    return {
+        "throughput_samples": analytics.get_throughput(),
+        "avg_throughput": analytics.get_avg_throughput(),
+    }
+
+
+@app.get("/api/v1/analytics/streaming/sessions")
+def get_streaming_sessions_analytics_endpoint(hours: int = Query(24, ge=1, le=720)) -> dict:
+    """Get streaming session analytics."""
+    analytics = get_streaming_analytics()
+    return analytics.get_session_stats(hours)
 
 
 if __name__ == "__main__":
