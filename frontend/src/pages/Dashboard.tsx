@@ -18,11 +18,12 @@ import ToolAnalytics from "../components/ToolAnalytics";
 import CostAnalytics from "../components/CostAnalytics";
 import PerformanceAnalytics from "../components/PerformanceAnalytics";
 import StreamingAnalytics from "../components/StreamingAnalytics";
+import ReportGenerator from "../components/ReportGenerator";
 import { TimeRange } from "../types/analytics";
 
 export const Dashboard: React.FC = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>("24h");
-  const [tab, setTab] = useState<"overview" | "queries" | "users" | "tools" | "costs" | "performance" | "streaming">(
+  const [tab, setTab] = useState<"overview" | "queries" | "users" | "tools" | "costs" | "performance" | "streaming" | "reports">(
     "overview"
   );
 
@@ -74,7 +75,7 @@ export const Dashboard: React.FC = () => {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex gap-8" aria-label="Tabs">
-            {(["overview", "queries", "users", "tools", "costs", "performance", "streaming"] as const).map((t) => (
+            {(["overview", "queries", "users", "tools", "costs", "performance", "streaming", "reports"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -159,6 +160,9 @@ export const Dashboard: React.FC = () => {
 
             {/* Streaming Tab */}
             {tab === "streaming" && streaming.data && <StreamingAnalytics data={streaming.data} />}
+
+            {/* Reports Tab */}
+            {tab === "reports" && <ReportGenerator />}
           </>
         )}
       </div>
