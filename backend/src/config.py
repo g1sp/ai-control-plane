@@ -55,6 +55,13 @@ class Settings(BaseSettings):
         "pretend you are",
     ]
 
+    # v3 Safety & Governance
+    audit_encryption_key: str = ""
+    rate_limit_backend: str = "memory"
+    redis_url: str = "redis://localhost:6379"
+    escalation_timeout_seconds: int = 300
+    escalation_timeout_action: str = "deny"
+
     class Config:
         env_file = ".env"
         case_sensitive = False

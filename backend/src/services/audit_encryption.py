@@ -23,7 +23,8 @@ _NONCE_BYTES = 12
 
 
 def _load_key() -> bytes | None:
-    raw = os.environ.get("AUDIT_ENCRYPTION_KEY", "").strip()
+    from ..config import settings
+    raw = settings.audit_encryption_key.strip() or os.environ.get("AUDIT_ENCRYPTION_KEY", "").strip()
     if not raw:
         return None
     try:
