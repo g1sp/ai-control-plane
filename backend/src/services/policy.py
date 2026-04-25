@@ -47,9 +47,17 @@ class PolicyEngine:
             "risk_score": threat.score,
             "threat_category": threat.category,
         })
-        if dsl_result and dsl_result.action == PolicyAction.BLOCK:
-            self._log_violation(request.user_id, dsl_result.rule_name, dsl_result.message)
-            return PolicyDecision(approved=False, reason=dsl_result.rule_name)
+        if dsl_result:
+            if dsl_result.action == PolicyAction.BLOCK:
+                self._log_violation(request.user_id, dsl_result.rule_name, dsl_result.message)
+                return PolicyDecision(approved=False, reason=dsl_result.rule_name)
+            if dsl_result.action == PolicyAction.ESCALATE:
+                self._log_violation(request.user_id, dsl_result.rule_name, dsl_result.message)
+                self._create_escalation(request.user_id, "input", dsl_result, {
+                    "prompt": request.prompt[:200],
+                    "risk_score": threat.score,
+                })
+                return PolicyDecision(approved=False, reason=f"escalation_required:{dsl_result.rule_name}")
 
         # Check 3: Legacy regex injection (kept as fallback)
         if self.check_injection(request.prompt):
@@ -94,6 +102,10 @@ class PolicyEngine:
                 return PolicyDecision(approved=False, reason=dsl_pre.rule_name)
             if dsl_pre.action == PolicyAction.ESCALATE:
                 self._log_violation(request.user_id, dsl_pre.rule_name, dsl_pre.message)
+                self._create_escalation(request.user_id, "pre_execution", dsl_pre, {
+                    "prompt": request.prompt[:200],
+                    "estimated_cost": request.budget_usd,
+                })
                 return PolicyDecision(approved=False, reason=f"escalation_required:{dsl_pre.rule_name}")
 
         return PolicyDecision(approved=True, reason="approved")
@@ -163,6 +175,22 @@ class PolicyEngine:
     def check_model_allowed(self, model: str) -> bool:
         """Check if model is whitelisted."""
         return model in settings.models_whitelist
+
+    def _create_escalation(self, user_id: str, trigger: str, result, context: dict):
+        if not self.db:
+            return
+        try:
+            from .escalation import EscalationService
+            EscalationService(self.db).create(
+                user_id=user_id,
+                trigger_type=trigger,
+                trigger_name=result.rule_name,
+                context=context,
+                risk_score=context.get("risk_score", 0.0),
+                policy_message=result.message,
+            )
+        except Exception:
+            pass  # escalation persistence failure must never block the policy decision
 
     def _log_violation(self, user_id: str, reason: str, details: str):
         """Log policy violation to database."""
