@@ -1,230 +1,212 @@
 <svg viewBox="0 0 1400 920" xmlns="http://www.w3.org/2000/svg" width="1400" height="920">
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <polygon points="0 0, 10 3, 0 6" fill="#0f3460"/>
+      <polygon points="0 0, 10 3, 0 6" fill="#475569"/>
     </marker>
-    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <polygon points="0 0, 10 3, 0 6" fill="#dc2626"/>
+    <marker id="arrow-accent" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#4f46e5"/>
     </marker>
     <style>
-      .mono { font-family: 'Courier New', Courier, monospace; }
       .sans { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; }
     </style>
   </defs>
 
   <!-- Page background -->
-  <rect width="1400" height="920" fill="#f0f4f8"/>
+  <rect width="1400" height="920" fill="#f1f5f9"/>
 
-  <!-- ══════════════════════════════════════════
-       HEADER
-  ══════════════════════════════════════════ -->
-  <rect x="0" y="0" width="1400" height="82" fill="#0f3460"/>
-  <text x="700" y="30" class="sans" font-size="26" font-weight="bold" fill="white" text-anchor="middle">AI Control Plane</text>
-  <text x="700" y="54" class="sans" font-size="15" fill="#a0c0ff" text-anchor="middle">v3: Safety &amp; Governance — The Enforcement Layer</text>
-  <text x="700" y="73" class="sans" font-size="11" fill="#6080a0" text-anchor="middle">8 Phases  •  185+ Tests  •  Production Ready  •  April 2026  •  github.com/g1sp/ai-control-plane</text>
+  <!-- ── HEADER ── -->
+  <rect x="0" y="0" width="1400" height="80" fill="#0f172a"/>
+  <text x="700" y="29" class="sans" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">AI Control Plane</text>
+  <text x="700" y="52" class="sans" font-size="14" fill="#94a3b8" text-anchor="middle">v3: Safety &amp; Governance — The Enforcement Layer</text>
+  <text x="700" y="70" class="sans" font-size="10" fill="#475569" text-anchor="middle">8 Phases  •  185+ Tests  •  Production Ready  •  April 2026  •  github.com/g1sp/ai-control-plane</text>
 
-  <!-- ══════════════════════════════════════════
-       CLIENT
-  ══════════════════════════════════════════ -->
-  <rect x="550" y="94" width="300" height="44" rx="6" fill="#1a1a2e" stroke="#4a6fa5" stroke-width="1.5"/>
-  <text x="700" y="114" class="sans" font-size="13" font-weight="bold" fill="white" text-anchor="middle">CLIENT</text>
-  <text x="700" y="130" class="sans" font-size="10" fill="#8898aa" text-anchor="middle">App  /  Agent  /  Script</text>
+  <!-- ── CLIENT ── -->
+  <rect x="550" y="92" width="300" height="44" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+  <text x="700" y="112" class="sans" font-size="13" font-weight="bold" fill="#e2e8f0" text-anchor="middle">CLIENT</text>
+  <text x="700" y="128" class="sans" font-size="10" fill="#64748b" text-anchor="middle">App  /  Agent  /  Script</text>
 
   <!-- Arrow client → v3 -->
-  <line x1="700" y1="138" x2="700" y2="166" stroke="#dc2626" stroke-width="2.5" marker-end="url(#arrow-red)"/>
-  <rect x="575" y="143" width="250" height="17" rx="3" fill="#fee2e2"/>
-  <text x="700" y="155" class="sans" font-size="10" fill="#dc2626" text-anchor="middle" font-weight="bold">EVERY REQUEST INTERCEPTED HERE ▼</text>
+  <line x1="700" y1="136" x2="700" y2="162" stroke="#4f46e5" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <rect x="565" y="141" width="270" height="17" rx="3" fill="#ede9fe"/>
+  <text x="700" y="153" class="sans" font-size="10" fill="#4338ca" text-anchor="middle" font-weight="bold">EVERY REQUEST INTERCEPTED HERE ▼</text>
 
-  <!-- ══════════════════════════════════════════
-       V3 SAFETY ENFORCEMENT PLANE
-  ══════════════════════════════════════════ -->
-  <rect x="28" y="168" width="1344" height="318" rx="10" fill="#fff1f2" stroke="#dc2626" stroke-width="3"/>
+  <!-- ── V3 SAFETY ENFORCEMENT PLANE ── -->
+  <rect x="28" y="164" width="1344" height="320" rx="8" fill="#fafafa" stroke="#6366f1" stroke-width="2"/>
 
-  <!-- "NEW v3" badge -->
-  <rect x="28" y="155" width="108" height="26" rx="5" fill="#dc2626"/>
-  <text x="82" y="173" class="sans" font-size="13" font-weight="bold" fill="white" text-anchor="middle">★  NEW  IN  v3</text>
+  <!-- Badge -->
+  <rect x="28" y="152" width="106" height="24" rx="4" fill="#4338ca"/>
+  <text x="81" y="169" class="sans" font-size="11" font-weight="bold" fill="#e0e7ff" text-anchor="middle">★  NEW IN v3</text>
 
-  <!-- Section title inside box -->
-  <text x="700" y="194" class="sans" font-size="15" font-weight="bold" fill="#991b1b" text-anchor="middle" letter-spacing="2">SAFETY  &amp;  GOVERNANCE  ENFORCEMENT  PLANE</text>
-  <line x1="60" y1="200" x2="1340" y2="200" stroke="#fca5a5" stroke-width="1"/>
+  <!-- Section title -->
+  <text x="700" y="190" class="sans" font-size="13" font-weight="bold" fill="#312e81" text-anchor="middle" letter-spacing="2">SAFETY  &amp;  GOVERNANCE  ENFORCEMENT  PLANE</text>
+  <line x1="60" y1="196" x2="1340" y2="196" stroke="#c7d2fe" stroke-width="1"/>
 
-  <!-- ── Row 1: 3 module boxes ── -->
-  <!-- Box 1: ML Threat Detection -->
-  <rect x="45" y="210" width="418" height="112" rx="7" fill="#991b1b"/>
-  <text x="254" y="232" class="sans" font-size="14" font-weight="bold" fill="white" text-anchor="middle">ML Threat Detection</text>
-  <line x1="65" y1="238" x2="443" y2="238" stroke="#fca5a5" stroke-width="0.8" opacity="0.5"/>
-  <text x="254" y="254" class="sans" font-size="10" fill="#fca5a5" text-anchor="middle">TF-IDF Cosine Similarity Classifier  •  &lt;5ms  •  No external APIs</text>
-  <text x="254" y="272" class="sans" font-size="10" fill="#fecaca" text-anchor="middle">Prompt Injection  |  Jailbreak  |  PII Exfiltration</text>
-  <text x="254" y="287" class="sans" font-size="10" fill="#fecaca" text-anchor="middle">Credential Theft  |  Indirect Injection</text>
-  <rect x="55" y="295" width="120" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="115" y="308" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">Score: 0.0 → 1.0</text>
-  <rect x="185" y="295" width="130" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="250" y="308" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">block  /  escalate  /  pass</text>
-  <rect x="325" y="295" width="128" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="389" y="308" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">5 threat categories</text>
+  <!-- Module 1: ML Threat Detection -->
+  <rect x="45" y="206" width="418" height="114" rx="6" fill="#312e81"/>
+  <text x="254" y="228" class="sans" font-size="13" font-weight="bold" fill="#e0e7ff" text-anchor="middle">ML Threat Detection</text>
+  <line x1="65" y1="234" x2="443" y2="234" stroke="#4338ca" stroke-width="0.8"/>
+  <text x="254" y="252" class="sans" font-size="10" fill="#a5b4fc" text-anchor="middle">TF-IDF Cosine Similarity Classifier  •  &lt;5ms  •  No external APIs</text>
+  <text x="254" y="268" class="sans" font-size="10" fill="#c7d2fe" text-anchor="middle">Prompt Injection  |  Jailbreak  |  PII Exfiltration</text>
+  <text x="254" y="283" class="sans" font-size="10" fill="#c7d2fe" text-anchor="middle">Credential Theft  |  Indirect Injection</text>
+  <rect x="55" y="294" width="118" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="114" y="306" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">Score: 0.0 → 1.0</text>
+  <rect x="183" y="294" width="128" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="247" y="306" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">block  /  escalate  /  pass</text>
+  <rect x="321" y="294" width="130" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="386" y="306" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">5 threat categories</text>
 
-  <!-- Box 2: Policy-as-Code -->
-  <rect x="491" y="210" width="418" height="112" rx="7" fill="#991b1b"/>
-  <text x="700" y="232" class="sans" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Policy-as-Code  (YAML DSL)</text>
-  <line x1="511" y1="238" x2="889" y2="238" stroke="#fca5a5" stroke-width="0.8" opacity="0.5"/>
-  <text x="700" y="254" class="sans" font-size="10" fill="#fca5a5" text-anchor="middle">Declarative YAML rules  •  Hot reload  •  No code deploys</text>
-  <text x="700" y="272" class="sans" font-size="10" fill="#fecaca" text-anchor="middle">Triggers:  input  |  pre_execution  |  tool_call</text>
-  <text x="700" y="287" class="sans" font-size="10" fill="#fecaca" text-anchor="middle">Actions:  block  |  escalate  |  allow</text>
-  <rect x="501" y="295" width="120" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="561" y="308" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">risk_score in rules</text>
-  <rect x="631" y="295" width="130" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="696" y="308" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">watches policies/ dir</text>
-  <rect x="771" y="295" width="128" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="835" y="308" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">safe eval sandbox</text>
+  <!-- Module 2: Policy-as-Code -->
+  <rect x="491" y="206" width="418" height="114" rx="6" fill="#312e81"/>
+  <text x="700" y="228" class="sans" font-size="13" font-weight="bold" fill="#e0e7ff" text-anchor="middle">Policy-as-Code  (YAML DSL)</text>
+  <line x1="511" y1="234" x2="889" y2="234" stroke="#4338ca" stroke-width="0.8"/>
+  <text x="700" y="252" class="sans" font-size="10" fill="#a5b4fc" text-anchor="middle">Declarative YAML rules  •  Hot reload  •  No code deploys</text>
+  <text x="700" y="268" class="sans" font-size="10" fill="#c7d2fe" text-anchor="middle">Triggers:  input  |  pre_execution  |  tool_call</text>
+  <text x="700" y="283" class="sans" font-size="10" fill="#c7d2fe" text-anchor="middle">Actions:  block  |  escalate  |  allow</text>
+  <rect x="501" y="294" width="118" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="560" y="306" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">risk_score in rules</text>
+  <rect x="629" y="294" width="128" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="693" y="306" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">watches policies/ dir</text>
+  <rect x="767" y="294" width="130" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="832" y="306" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">safe eval sandbox</text>
 
-  <!-- Box 3: AES-256-GCM Encryption -->
-  <rect x="937" y="210" width="418" height="112" rx="7" fill="#991b1b"/>
-  <text x="1146" y="232" class="sans" font-size="14" font-weight="bold" fill="white" text-anchor="middle">AES-256-GCM Audit Encryption</text>
-  <line x1="957" y1="238" x2="1335" y2="238" stroke="#fca5a5" stroke-width="0.8" opacity="0.5"/>
-  <text x="1146" y="254" class="sans" font-size="10" fill="#fca5a5" text-anchor="middle">Tamper-evident encrypted audit log</text>
-  <text x="1146" y="272" class="sans" font-size="10" fill="#fecaca" text-anchor="middle">Encrypted at write  •  Unique nonce per record</text>
-  <text x="1146" y="287" class="sans" font-size="10" fill="#fecaca" text-anchor="middle">GCM auth tag detects tampering  •  Key rotation API</text>
-  <rect x="947" y="295" width="140" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="1017" y="308" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">enc_v1: prefix</text>
-  <rect x="1097" y="295" width="140" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="1167" y="308" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">compliance endpoint</text>
-  <rect x="1247" y="295" width="98" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="1296" y="308" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">/admin/rekey</text>
+  <!-- Module 3: AES-256-GCM -->
+  <rect x="937" y="206" width="418" height="114" rx="6" fill="#312e81"/>
+  <text x="1146" y="228" class="sans" font-size="13" font-weight="bold" fill="#e0e7ff" text-anchor="middle">AES-256-GCM Audit Encryption</text>
+  <line x1="957" y1="234" x2="1335" y2="234" stroke="#4338ca" stroke-width="0.8"/>
+  <text x="1146" y="252" class="sans" font-size="10" fill="#a5b4fc" text-anchor="middle">Tamper-evident encrypted audit log</text>
+  <text x="1146" y="268" class="sans" font-size="10" fill="#c7d2fe" text-anchor="middle">Encrypted at write  •  Unique nonce per record</text>
+  <text x="1146" y="283" class="sans" font-size="10" fill="#c7d2fe" text-anchor="middle">GCM auth tag detects tampering  •  Key rotation API</text>
+  <rect x="947" y="294" width="128" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="1011" y="306" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">enc_v1: prefix</text>
+  <rect x="1085" y="294" width="140" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="1155" y="306" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">compliance endpoint</text>
+  <rect x="1235" y="294" width="108" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="1289" y="306" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">/admin/rekey</text>
 
-  <!-- ── Row 2: 2 module boxes ── -->
-  <!-- Box 4: Human-in-the-Loop Escalation -->
-  <rect x="45" y="338" width="640" height="112" rx="7" fill="#991b1b"/>
-  <text x="365" y="360" class="sans" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Human-in-the-Loop Escalation</text>
-  <line x1="65" y1="366" x2="665" y2="366" stroke="#fca5a5" stroke-width="0.8" opacity="0.5"/>
-  <text x="365" y="382" class="sans" font-size="10" fill="#fca5a5" text-anchor="middle">Policy ESCALATE rules → review queue → human decision → proceed or deny</text>
-  <text x="365" y="398" class="sans" font-size="10" fill="#fecaca" text-anchor="middle">Timeout: configurable (default: deny)  •  Full decision audit trail</text>
-  <text x="365" y="413" class="sans" font-size="10" fill="#fecaca" text-anchor="middle">Context preserved: user  /  tool  /  risk score  /  policy message</text>
-  <rect x="55" y="424" width="185" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="148" y="437" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">GET /escalations/pending</text>
-  <rect x="250" y="424" width="205" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="353" y="437" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">POST /escalations/{id}/decide</text>
-  <rect x="465" y="424" width="210" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="570" y="437" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">fail-safe  |  fail-open  (configurable)</text>
+  <!-- Module 4: Human-in-the-Loop -->
+  <rect x="45" y="334" width="640" height="112" rx="6" fill="#312e81"/>
+  <text x="365" y="356" class="sans" font-size="13" font-weight="bold" fill="#e0e7ff" text-anchor="middle">Human-in-the-Loop Escalation</text>
+  <line x1="65" y1="362" x2="665" y2="362" stroke="#4338ca" stroke-width="0.8"/>
+  <text x="365" y="378" class="sans" font-size="10" fill="#a5b4fc" text-anchor="middle">Policy ESCALATE rules → review queue → human decision → proceed or deny</text>
+  <text x="365" y="394" class="sans" font-size="10" fill="#c7d2fe" text-anchor="middle">Timeout configurable (default: deny)  •  Full decision audit trail</text>
+  <text x="365" y="408" class="sans" font-size="10" fill="#c7d2fe" text-anchor="middle">Context preserved: user  /  tool  /  risk score  /  policy message</text>
+  <rect x="55" y="420" width="182" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="146" y="432" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">GET /escalations/pending</text>
+  <rect x="247" y="420" width="200" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="347" y="432" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">POST /escalations/{id}/decide</text>
+  <rect x="457" y="420" width="218" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="566" y="432" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">fail-safe  |  fail-open  (configurable)</text>
 
-  <!-- Box 5: Redis Rate Limiter -->
-  <rect x="713" y="338" width="642" height="112" rx="7" fill="#991b1b"/>
-  <text x="1034" y="360" class="sans" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Redis-Backed Rate Limiter</text>
-  <line x1="733" y1="366" x2="1335" y2="366" stroke="#fca5a5" stroke-width="0.8" opacity="0.5"/>
-  <text x="1034" y="382" class="sans" font-size="10" fill="#fca5a5" text-anchor="middle">Sliding window via Redis sorted sets  •  Multi-instance safe</text>
-  <text x="1034" y="398" class="sans" font-size="10" fill="#fecaca" text-anchor="middle">Automatic fallback to in-memory when Redis unavailable</text>
-  <text x="1034" y="413" class="sans" font-size="10" fill="#fecaca" text-anchor="middle">Per-minute  /  per-hour  /  per-day  windows  •  Per-user isolation</text>
-  <rect x="723" y="424" width="185" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="816" y="437" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">RATE_LIMIT_BACKEND=redis</text>
-  <rect x="918" y="424" width="170" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="1003" y="437" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">sorted set per user/window</text>
-  <rect x="1098" y="424" width="248" height="18" rx="4" fill="#7f1d1d"/>
-  <text x="1222" y="437" class="sans" font-size="9" fill="#fca5a5" text-anchor="middle">stays functional if Redis drops</text>
+  <!-- Module 5: Redis Rate Limiter -->
+  <rect x="713" y="334" width="642" height="112" rx="6" fill="#312e81"/>
+  <text x="1034" y="356" class="sans" font-size="13" font-weight="bold" fill="#e0e7ff" text-anchor="middle">Redis-Backed Rate Limiter</text>
+  <line x1="733" y1="362" x2="1335" y2="362" stroke="#4338ca" stroke-width="0.8"/>
+  <text x="1034" y="378" class="sans" font-size="10" fill="#a5b4fc" text-anchor="middle">Sliding window via Redis sorted sets  •  Multi-instance safe</text>
+  <text x="1034" y="394" class="sans" font-size="10" fill="#c7d2fe" text-anchor="middle">Automatic fallback to in-memory when Redis unavailable</text>
+  <text x="1034" y="408" class="sans" font-size="10" fill="#c7d2fe" text-anchor="middle">Per-minute  /  per-hour  /  per-day  windows  •  Per-user isolation</text>
+  <rect x="723" y="420" width="182" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="814" y="432" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">RATE_LIMIT_BACKEND=redis</text>
+  <rect x="915" y="420" width="168" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="999" y="432" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">sorted set per user/window</text>
+  <rect x="1093" y="420" width="252" height="17" rx="3" fill="#1e1b4b"/>
+  <text x="1219" y="432" class="sans" font-size="9" fill="#a5b4fc" text-anchor="middle">stays functional if Redis drops</text>
 
   <!-- Arrow v3 → v1/v2 -->
-  <line x1="700" y1="487" x2="700" y2="513" stroke="#0f3460" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <rect x="490" y="491" width="420" height="17" rx="3" fill="#dbeafe"/>
-  <text x="700" y="503" class="sans" font-size="10" fill="#1e40af" text-anchor="middle" font-weight="bold">Policy-approved requests only ▼</text>
+  <line x1="700" y1="485" x2="700" y2="510" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="490" y="489" width="420" height="16" rx="3" fill="#e2e8f0"/>
+  <text x="700" y="501" class="sans" font-size="10" fill="#475569" text-anchor="middle" font-weight="bold">Policy-approved requests only ▼</text>
 
-  <!-- ══════════════════════════════════════════
-       V1/V2 FOUNDATION
-  ══════════════════════════════════════════ -->
-  <rect x="28" y="516" width="1344" height="118" rx="8" fill="#1a1a2e"/>
-  <text x="700" y="537" class="sans" font-size="12" font-weight="bold" fill="#a0c0ff" text-anchor="middle" letter-spacing="2">EXISTING FOUNDATION  —  v1 + v2  (PHASES 1 – 7)</text>
-  <line x1="60" y1="543" x2="1340" y2="543" stroke="#2a3a6e" stroke-width="1"/>
+  <!-- ── V1/V2 FOUNDATION ── -->
+  <rect x="28" y="512" width="1344" height="118" rx="8" fill="#1e293b"/>
+  <text x="700" y="533" class="sans" font-size="11" font-weight="bold" fill="#94a3b8" text-anchor="middle" letter-spacing="2">EXISTING FOUNDATION  —  v1 + v2  (PHASES 1 – 7)</text>
+  <line x1="60" y1="539" x2="1340" y2="539" stroke="#334155" stroke-width="1"/>
 
-  <!-- Phase boxes in v1/v2 row -->
-  <rect x="44" y="552" width="170" height="68" rx="5" fill="#0f3460"/>
-  <text x="129" y="572" class="sans" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Phase 1</text>
-  <text x="129" y="588" class="sans" font-size="9" fill="#a0c0ff" text-anchor="middle">Policy Gateway</text>
-  <text x="129" y="602" class="sans" font-size="8" fill="#6080a0" text-anchor="middle">Audit · Budget · Routing</text>
+  <rect x="44" y="548" width="170" height="68" rx="5" fill="#334155"/>
+  <text x="129" y="568" class="sans" font-size="11" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Phase 1</text>
+  <text x="129" y="584" class="sans" font-size="9" fill="#94a3b8" text-anchor="middle">Policy Gateway</text>
+  <text x="129" y="598" class="sans" font-size="8" fill="#64748b" text-anchor="middle">Audit · Budget · Routing</text>
 
-  <rect x="226" y="552" width="170" height="68" rx="5" fill="#0f3460"/>
-  <text x="311" y="572" class="sans" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Phase 2</text>
-  <text x="311" y="588" class="sans" font-size="9" fill="#a0c0ff" text-anchor="middle">Agent Orchestration</text>
-  <text x="311" y="602" class="sans" font-size="8" fill="#6080a0" text-anchor="middle">Tools · Security · Approvals</text>
+  <rect x="226" y="548" width="170" height="68" rx="5" fill="#334155"/>
+  <text x="311" y="568" class="sans" font-size="11" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Phase 2</text>
+  <text x="311" y="584" class="sans" font-size="9" fill="#94a3b8" text-anchor="middle">Agent Orchestration</text>
+  <text x="311" y="598" class="sans" font-size="8" fill="#64748b" text-anchor="middle">Tools · Security · Approvals</text>
 
-  <rect x="408" y="552" width="170" height="68" rx="5" fill="#0f3460"/>
-  <text x="493" y="572" class="sans" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Phase 3</text>
-  <text x="493" y="588" class="sans" font-size="9" fill="#a0c0ff" text-anchor="middle">Streaming</text>
-  <text x="493" y="602" class="sans" font-size="8" fill="#6080a0" text-anchor="middle">WebSocket · SSE · Sessions</text>
+  <rect x="408" y="548" width="170" height="68" rx="5" fill="#334155"/>
+  <text x="493" y="568" class="sans" font-size="11" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Phase 3</text>
+  <text x="493" y="584" class="sans" font-size="9" fill="#94a3b8" text-anchor="middle">Streaming</text>
+  <text x="493" y="598" class="sans" font-size="8" fill="#64748b" text-anchor="middle">WebSocket · SSE · Sessions</text>
 
-  <rect x="590" y="552" width="170" height="68" rx="5" fill="#0f3460"/>
-  <text x="675" y="572" class="sans" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Phase 4</text>
-  <text x="675" y="588" class="sans" font-size="9" fill="#a0c0ff" text-anchor="middle">Analytics Engine</text>
-  <text x="675" y="602" class="sans" font-size="8" fill="#6080a0" text-anchor="middle">Queries · Costs · Users</text>
+  <rect x="590" y="548" width="170" height="68" rx="5" fill="#334155"/>
+  <text x="675" y="568" class="sans" font-size="11" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Phase 4</text>
+  <text x="675" y="584" class="sans" font-size="9" fill="#94a3b8" text-anchor="middle">Analytics Engine</text>
+  <text x="675" y="598" class="sans" font-size="8" fill="#64748b" text-anchor="middle">Queries · Costs · Users</text>
 
-  <rect x="772" y="552" width="170" height="68" rx="5" fill="#0f3460"/>
-  <text x="857" y="572" class="sans" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Phase 5</text>
-  <text x="857" y="588" class="sans" font-size="9" fill="#a0c0ff" text-anchor="middle">Dashboard</text>
-  <text x="857" y="602" class="sans" font-size="8" fill="#6080a0" text-anchor="middle">Next.js · Filters · Drill-down</text>
+  <rect x="772" y="548" width="170" height="68" rx="5" fill="#334155"/>
+  <text x="857" y="568" class="sans" font-size="11" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Phase 5</text>
+  <text x="857" y="584" class="sans" font-size="9" fill="#94a3b8" text-anchor="middle">Dashboard</text>
+  <text x="857" y="598" class="sans" font-size="8" fill="#64748b" text-anchor="middle">Next.js · Filters · Drill-down</text>
 
-  <rect x="954" y="552" width="170" height="68" rx="5" fill="#0f3460"/>
-  <text x="1039" y="572" class="sans" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Phase 6</text>
-  <text x="1039" y="588" class="sans" font-size="9" fill="#a0c0ff" text-anchor="middle">Real-Time</text>
-  <text x="1039" y="602" class="sans" font-size="8" fill="#6080a0" text-anchor="middle">Live metrics · WS push</text>
+  <rect x="954" y="548" width="170" height="68" rx="5" fill="#334155"/>
+  <text x="1039" y="568" class="sans" font-size="11" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Phase 6</text>
+  <text x="1039" y="584" class="sans" font-size="9" fill="#94a3b8" text-anchor="middle">Real-Time</text>
+  <text x="1039" y="598" class="sans" font-size="8" fill="#64748b" text-anchor="middle">Live metrics · WS push</text>
 
-  <rect x="1136" y="552" width="210" height="68" rx="5" fill="#0f3460"/>
-  <text x="1241" y="572" class="sans" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Phase 7</text>
-  <text x="1241" y="588" class="sans" font-size="9" fill="#a0c0ff" text-anchor="middle">Multi-Channel Alerts</text>
-  <text x="1241" y="602" class="sans" font-size="8" fill="#6080a0" text-anchor="middle">Slack · Email · PagerDuty</text>
+  <rect x="1136" y="548" width="210" height="68" rx="5" fill="#334155"/>
+  <text x="1241" y="568" class="sans" font-size="11" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Phase 7</text>
+  <text x="1241" y="584" class="sans" font-size="9" fill="#94a3b8" text-anchor="middle">Multi-Channel Alerts</text>
+  <text x="1241" y="598" class="sans" font-size="8" fill="#64748b" text-anchor="middle">Slack · Email · PagerDuty</text>
 
-  <!-- Arrow v1/v2 → models -->
-  <line x1="700" y1="635" x2="700" y2="661" stroke="#0f3460" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Arrow v1/v2 → infrastructure -->
+  <line x1="700" y1="631" x2="700" y2="656" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
 
-  <!-- ══════════════════════════════════════════
-       MODELS / INFRASTRUCTURE ROW
-  ══════════════════════════════════════════ -->
-  <rect x="28" y="664" width="426" height="76" rx="7" fill="#064e3b"/>
-  <text x="241" y="688" class="sans" font-size="13" font-weight="bold" fill="white" text-anchor="middle">Ollama</text>
-  <text x="241" y="704" class="sans" font-size="10" fill="#6ee7b7" text-anchor="middle">Local LLM  •  Free  •  Fast</text>
-  <text x="241" y="718" class="sans" font-size="9" fill="#34d399" text-anchor="middle">port 11434  •  llama2 / mixtral</text>
-  <text x="241" y="731" class="sans" font-size="9" fill="#059669" text-anchor="middle">Simple prompts routed here</text>
+  <!-- ── INFRASTRUCTURE ROW ── -->
+  <rect x="28" y="658" width="426" height="76" rx="6" fill="#0f2d1f"/>
+  <text x="241" y="682" class="sans" font-size="13" font-weight="bold" fill="#d1fae5" text-anchor="middle">Ollama</text>
+  <text x="241" y="698" class="sans" font-size="10" fill="#6ee7b7" text-anchor="middle">Local LLM  •  Free  •  Fast</text>
+  <text x="241" y="712" class="sans" font-size="9" fill="#34d399" text-anchor="middle">port 11434  •  llama2 / mixtral</text>
+  <text x="241" y="725" class="sans" font-size="9" fill="#059669" text-anchor="middle">Simple prompts routed here</text>
 
-  <rect x="487" y="664" width="426" height="76" rx="7" fill="#0f3460"/>
-  <text x="700" y="688" class="sans" font-size="13" font-weight="bold" fill="white" text-anchor="middle">Claude API</text>
-  <text x="700" y="704" class="sans" font-size="10" fill="#a0c0ff" text-anchor="middle">Cloud LLM  •  Anthropic</text>
-  <text x="700" y="718" class="sans" font-size="9" fill="#7090d0" text-anchor="middle">Opus 4 · Sonnet 4 · Haiku 4</text>
-  <text x="700" y="731" class="sans" font-size="9" fill="#4060a0" text-anchor="middle">Complex prompts routed here</text>
+  <rect x="487" y="658" width="426" height="76" rx="6" fill="#0f1e3d"/>
+  <text x="700" y="682" class="sans" font-size="13" font-weight="bold" fill="#dbeafe" text-anchor="middle">Claude API</text>
+  <text x="700" y="698" class="sans" font-size="10" fill="#93c5fd" text-anchor="middle">Cloud LLM  •  Anthropic</text>
+  <text x="700" y="712" class="sans" font-size="9" fill="#60a5fa" text-anchor="middle">Opus 4 · Sonnet 4 · Haiku 4</text>
+  <text x="700" y="725" class="sans" font-size="9" fill="#3b82f6" text-anchor="middle">Complex prompts routed here</text>
 
-  <rect x="946" y="664" width="426" height="76" rx="7" fill="#450a0a"/>
-  <text x="1159" y="688" class="sans" font-size="13" font-weight="bold" fill="white" text-anchor="middle">Redis</text>
-  <text x="1159" y="704" class="sans" font-size="10" fill="#fca5a5" text-anchor="middle">Rate Limiting Backend</text>
-  <text x="1159" y="718" class="sans" font-size="9" fill="#f87171" text-anchor="middle">port 6379  •  redis:7-alpine</text>
-  <text x="1159" y="731" class="sans" font-size="9" fill="#ef4444" text-anchor="middle">Fallback: in-memory (auto)</text>
+  <rect x="946" y="658" width="426" height="76" rx="6" fill="#1c1917"/>
+  <text x="1159" y="682" class="sans" font-size="13" font-weight="bold" fill="#e7e5e4" text-anchor="middle">Redis</text>
+  <text x="1159" y="698" class="sans" font-size="10" fill="#a8a29e" text-anchor="middle">Rate Limiting Backend</text>
+  <text x="1159" y="712" class="sans" font-size="9" fill="#78716c" text-anchor="middle">port 6379  •  redis:7-alpine</text>
+  <text x="1159" y="725" class="sans" font-size="9" fill="#57534e" text-anchor="middle">Fallback: in-memory (auto)</text>
 
-  <!-- ══════════════════════════════════════════
-       STATS ROW
-  ══════════════════════════════════════════ -->
-  <rect x="28" y="758" width="320" height="132" rx="8" fill="#052e16"/>
-  <text x="188" y="796" class="sans" font-size="42" font-weight="bold" fill="#4ade80" text-anchor="middle">64</text>
-  <text x="188" y="818" class="sans" font-size="13" font-weight="bold" fill="#86efac" text-anchor="middle">New Tests in v3</text>
-  <text x="188" y="836" class="sans" font-size="10" fill="#4ade80" text-anchor="middle">100% pass rate</text>
-  <text x="188" y="876" class="sans" font-size="9" fill="#166534" text-anchor="middle">185+ total across all phases</text>
+  <!-- ── STATS ROW ── -->
+  <rect x="28" y="752" width="320" height="132" rx="6" fill="#0f2d1f"/>
+  <text x="188" y="792" class="sans" font-size="44" font-weight="bold" fill="#6ee7b7" text-anchor="middle">64</text>
+  <text x="188" y="814" class="sans" font-size="12" font-weight="bold" fill="#a7f3d0" text-anchor="middle">New Tests in v3</text>
+  <text x="188" y="832" class="sans" font-size="10" fill="#34d399" text-anchor="middle">100% pass rate</text>
+  <text x="188" y="872" class="sans" font-size="9" fill="#065f46" text-anchor="middle">185+ total across all phases</text>
 
-  <rect x="362" y="758" width="320" height="132" rx="8" fill="#450a0a"/>
-  <text x="522" y="796" class="sans" font-size="42" font-weight="bold" fill="#f87171" text-anchor="middle">5</text>
-  <text x="522" y="818" class="sans" font-size="13" font-weight="bold" fill="#fca5a5" text-anchor="middle">Safety Modules</text>
-  <text x="522" y="836" class="sans" font-size="10" fill="#f87171" text-anchor="middle">All production-ready</text>
-  <text x="522" y="876" class="sans" font-size="9" fill="#7f1d1d" text-anchor="middle">ML · Policy · Encrypt · Escalate · Rate</text>
+  <rect x="362" y="752" width="320" height="132" rx="6" fill="#1c1917"/>
+  <text x="522" y="792" class="sans" font-size="44" font-weight="bold" fill="#d6d3d1" text-anchor="middle">5</text>
+  <text x="522" y="814" class="sans" font-size="12" font-weight="bold" fill="#e7e5e4" text-anchor="middle">Safety Modules</text>
+  <text x="522" y="832" class="sans" font-size="10" fill="#a8a29e" text-anchor="middle">All production-ready</text>
+  <text x="522" y="872" class="sans" font-size="9" fill="#57534e" text-anchor="middle">ML · Policy · Encrypt · Escalate · Rate</text>
 
-  <rect x="696" y="758" width="320" height="132" rx="8" fill="#1e1b4b"/>
-  <text x="856" y="788" class="sans" font-size="20" font-weight="bold" fill="#a5b4fc" text-anchor="middle">AES-256-GCM</text>
-  <text x="856" y="812" class="sans" font-size="13" font-weight="bold" fill="#c7d2fe" text-anchor="middle">Audit Encryption</text>
-  <text x="856" y="832" class="sans" font-size="10" fill="#a5b4fc" text-anchor="middle">Tamper-evident</text>
-  <text x="856" y="850" class="sans" font-size="10" fill="#818cf8" text-anchor="middle">Unique nonce per record</text>
-  <text x="856" y="876" class="sans" font-size="9" fill="#4338ca" text-anchor="middle">Decrypts only at compliance endpoints</text>
+  <rect x="696" y="752" width="320" height="132" rx="6" fill="#1e1b4b"/>
+  <text x="856" y="785" class="sans" font-size="19" font-weight="bold" fill="#c7d2fe" text-anchor="middle">AES-256-GCM</text>
+  <text x="856" y="808" class="sans" font-size="12" font-weight="bold" fill="#e0e7ff" text-anchor="middle">Audit Encryption</text>
+  <text x="856" y="828" class="sans" font-size="10" fill="#a5b4fc" text-anchor="middle">Tamper-evident</text>
+  <text x="856" y="846" class="sans" font-size="10" fill="#818cf8" text-anchor="middle">Unique nonce per record</text>
+  <text x="856" y="872" class="sans" font-size="9" fill="#4338ca" text-anchor="middle">Decrypts only at compliance endpoints</text>
 
-  <rect x="1030" y="758" width="342" height="132" rx="8" fill="#0c1a12"/>
-  <text x="1201" y="788" class="sans" font-size="20" font-weight="bold" fill="#34d399" text-anchor="middle">&lt; 5ms</text>
-  <text x="1201" y="812" class="sans" font-size="13" font-weight="bold" fill="#6ee7b7" text-anchor="middle">Threat Detection</text>
-  <text x="1201" y="832" class="sans" font-size="10" fill="#34d399" text-anchor="middle">Per-request ML scoring</text>
-  <text x="1201" y="850" class="sans" font-size="10" fill="#059669" text-anchor="middle">No external API calls</text>
-  <text x="1201" y="876" class="sans" font-size="9" fill="#064e3b" text-anchor="middle">Self-contained · Deterministic · Fast</text>
+  <rect x="1030" y="752" width="342" height="132" rx="6" fill="#0f2d1f"/>
+  <text x="1201" y="785" class="sans" font-size="19" font-weight="bold" fill="#6ee7b7" text-anchor="middle">&lt; 5ms</text>
+  <text x="1201" y="808" class="sans" font-size="12" font-weight="bold" fill="#a7f3d0" text-anchor="middle">Threat Detection</text>
+  <text x="1201" y="828" class="sans" font-size="10" fill="#34d399" text-anchor="middle">Per-request ML scoring</text>
+  <text x="1201" y="846" class="sans" font-size="10" fill="#059669" text-anchor="middle">No external API calls</text>
+  <text x="1201" y="872" class="sans" font-size="9" fill="#065f46" text-anchor="middle">Self-contained · Deterministic · Fast</text>
 
-  <!-- ══════════════════════════════════════════
-       BOTTOM CAPTION
-  ══════════════════════════════════════════ -->
-  <rect x="28" y="900" width="1344" height="14" rx="3" fill="#0f3460" opacity="0.7"/>
-  <text x="700" y="911" class="sans" font-size="9" fill="#a0c0ff" text-anchor="middle">The city is built. v3 is the law enforcement. — AI Control Plane  •  github.com/g1sp/ai-control-plane</text>
+  <!-- ── FOOTER ── -->
+  <rect x="28" y="898" width="1344" height="14" rx="3" fill="#1e293b"/>
+  <text x="700" y="909" class="sans" font-size="9" fill="#64748b" text-anchor="middle">The city is built. v3 is the law enforcement. — AI Control Plane  •  github.com/g1sp/ai-control-plane</text>
 
 </svg>
