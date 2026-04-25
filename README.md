@@ -346,7 +346,9 @@ python -m pytest tests/test_policy_dsl.py tests/test_threat_detector.py \
 python -m pytest tests/ --cov=src --cov-report=term-missing
 ```
 
-**Test coverage**: 92%+ (121 tests through v2, 64 new tests in v3)
+**Test coverage**: 92%+ (413 tests across 29 files, 64 new in v3)
+
+Full test documentation: **[docs/test-coverage.html](./docs/test-coverage.html)**
 
 ---
 

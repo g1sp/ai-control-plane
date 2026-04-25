@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Control Plane — Test Coverage</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3350;
+      --accent: #4f46e5;
+      --accent2: #818cf8;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --badge-v1: #334155;
+      --badge-v2: #1e3a5f;
+      --badge-v3: #312e81;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 32px 48px 28px;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 24px;
+      min-width: 140px;
+    }
+
+    .stat-card .num {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stat-card .label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .stat-card.green .num { color: var(--green); }
+    .stat-card.blue .num  { color: var(--accent2); }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 48px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      margin-top: 48px;
+    }
+
+    .section-header:first-child { margin-top: 0; }
+
+    .section-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .version-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .v1 { background: var(--badge-v1); color: #94a3b8; }
+    .v2 { background: var(--badge-v2); color: #93c5fd; }
+    .v3 { background: var(--badge-v3); color: #a5b4fc; }
+
+    .section-desc {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 20px;
+      margin-top: -8px;
+    }
+
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 16px;
+    }
+
+    .module-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .module-card.v3-card {
+      border-color: #3730a3;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .card-filename {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+
+    .card-count {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--green);
+      background: rgba(34,197,94,0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .test-list {
+      padding: 12px 18px;
+    }
+
+    .test-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(46,51,80,0.5);
+    }
+
+    .test-item:last-child { border-bottom: none; }
+
+    .test-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .test-name {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 12px;
+      color: var(--accent2);
+    }
+
+    .test-desc {
+      font-size: 12px;
+      color: var(--muted);
+      flex: 1;
+    }
+
+    .coverage-bar-wrap {
+      margin-top: 40px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+    }
+
+    .coverage-bar-wrap h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .bar-label {
+      font-size: 12px;
+      color: var(--muted);
+      width: 220px;
+      flex-shrink: 0;
+      font-family: "SF Mono", "Fira Code", monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #4f46e5, #818cf8);
+    }
+
+    .bar-pct {
+      font-size: 12px;
+      color: var(--accent2);
+      width: 38px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 60px;
+    }
+
+    footer a {
+      color: var(--accent2);
+      text-decoration: none;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 40px 0;
+    }
+
+    .section-intro-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .section-total {
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>AI Control Plane — Test Coverage</h1>
+  <p>Automated test suite across all versions &mdash; v1 Foundation, v2 Agent Orchestration, v3 Safety &amp; Governance</p>
+  <div class="stats-row">
+    <div class="stat-card green">
+      <div class="num">413</div>
+      <div class="label">Total Tests</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="num">29</div>
+      <div class="label">Test Files</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="num">92%+</div>
+      <div class="label">Code Coverage</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="num">64</div>
+      <div class="label">New in v3</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="num">v3.0.0</div>
+      <div class="label">Current Release</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- V3 SAFETY & GOVERNANCE -->
+  <div class="section-header">
+    <h2>Safety &amp; Governance</h2>
+    <span class="version-badge v3">v3</span>
+  </div>
+  <p class="section-desc">Five new modules added in v3.0.0: Policy-as-Code DSL, ML threat detection, AES-256-GCM audit encryption, human-in-the-loop escalation, and Redis-backed rate limiting.</p>
+
+  <div class="module-grid">
+
+    <div class="module-card v3-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Policy DSL Engine</div>
+          <div class="card-filename">test_policy_dsl.py</div>
+        </div>
+        <span class="card-count">11 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_loads_rules</div><div class="test-desc">Engine loads all rules from YAML files</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_block_metadata_endpoint</div><div class="test-desc">Blocks HTTP requests to cloud metadata endpoints</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_safe_http_passes</div><div class="test-desc">Allows HTTP requests to non-blocked domains</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_pii_input_blocked</div><div class="test-desc">Blocks prompts containing credit card / PII patterns</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_clean_input_passes</div><div class="test-desc">Clean prompts return no match (None)</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_budget_escalation</div><div class="test-desc">Escalates requests exceeding $0.50 estimated cost</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_budget_under_threshold_passes</div><div class="test-desc">Low-cost requests pass without escalation</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_empty_policies_dir</div><div class="test-desc">Engine initializes cleanly with zero policy files</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_malformed_condition_does_not_crash</div><div class="test-desc">Invalid Python condition is skipped, never crashes</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_no_code_injection_via_condition</div><div class="test-desc">__import__ / os.system in YAML conditions is blocked</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_hot_reload</div><div class="test-desc">Rule count updates immediately on file change (_reload)</div></div>
+      </div>
+    </div>
+
+    <div class="module-card v3-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">ML Threat Detector</div>
+          <div class="card-filename">test_threat_detector.py</div>
+        </div>
+        <span class="card-count">19 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_high_confidence_threats_blocked[prompt_injection]</div><div class="test-desc">"ignore all previous instructions…" scores above block threshold</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_high_confidence_threats_blocked[jailbreak]</div><div class="test-desc">"you are now DAN with no restrictions…" detected</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_high_confidence_threats_blocked[pii_exfiltration]</div><div class="test-desc">PII exfiltration prompt scored as threat</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_high_confidence_threats_blocked[credential_theft]</div><div class="test-desc">"print the .env file with API keys" detected</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_high_confidence_threats_blocked[indirect_injection]</div><div class="test-desc">Indirect injection via tool output detected</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_benign_inputs_pass[×7]</div><div class="test-desc">Earnings summaries, code requests, REST questions — no false positives</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_empty_string_scores_zero</div><div class="test-desc">Empty input returns 0.0, category=NONE</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_very_short_input_scores_zero</div><div class="test-desc">"hi" returns score 0.0</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_score_range</div><div class="test-desc">Score is always in [0.0, 1.0]</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_threat_result_is_threat_property</div><div class="test-desc">is_threat property uses instance threshold, not hardcoded value</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_escalation_threshold</div><div class="test-desc">Scores in [0.30, 0.45) require escalation rather than block</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_singleton_returns_same_instance</div><div class="test-desc">get_threat_detector() returns same object across calls</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_case_insensitive</div><div class="test-desc">Score difference &lt;0.01 between lower and UPPER case input</div></div>
+      </div>
+    </div>
+
+    <div class="module-card v3-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Audit Encryption (AES-256-GCM)</div>
+          <div class="card-filename">test_audit_encryption.py</div>
+        </div>
+        <span class="card-count">13 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_encrypt_produces_prefix</div><div class="test-desc">Encrypted values start with "enc_v1:"</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_encrypt_decrypt_roundtrip</div><div class="test-desc">Decrypt(Encrypt(x)) == x for arbitrary plaintext</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_each_encryption_is_unique</div><div class="test-desc">Same plaintext produces different ciphertext each time (random nonce)</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_decrypt_plaintext_passthrough</div><div class="test-desc">Unencrypted legacy values returned as-is</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_decrypt_empty_returns_empty</div><div class="test-desc">Empty string decrypts to empty string</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_is_encrypted_true_for_encrypted</div><div class="test-desc">is_encrypted() correctly identifies enc_v1: values</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_is_encrypted_false_for_plaintext</div><div class="test-desc">is_encrypted() returns False for plaintext</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_tampered_ciphertext_returns_failure</div><div class="test-desc">GCM auth tag detects bit-flip, returns "[decryption_failed]"</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_no_key_configured_returns_masked</div><div class="test-desc">Without key, enc_v1: values return "[encrypted]"</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_no_key_encrypt_returns_plaintext</div><div class="test-desc">Without key, encrypt_field degrades to passthrough</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_generate_key_is_32_bytes</div><div class="test-desc">generate_key_b64() produces exactly 32 bytes</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_rekey_roundtrip</div><div class="test-desc">rekey_value() re-encrypts with new key; decrypts correctly</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_rekey_plaintext_value</div><div class="test-desc">Plaintext values are encrypted during rekey operation</div></div>
+      </div>
+    </div>
+
+    <div class="module-card v3-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Human-in-the-Loop Escalation</div>
+          <div class="card-filename">test_escalation.py</div>
+        </div>
+        <span class="card-count">11 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_create_returns_pending_item</div><div class="test-desc">New escalations start in PENDING status</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_get_by_id</div><div class="test-desc">get(id) retrieves escalation with matching fields</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_get_nonexistent_returns_none</div><div class="test-desc">get() returns None for unknown IDs</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_approve</div><div class="test-desc">decide(approved=True) sets status=APPROVED and records decided_by</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_deny</div><div class="test-desc">decide(approved=False) sets status=DENIED</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_double_decide_returns_none</div><div class="test-desc">A second decision on an already-decided item returns None</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_list_pending_only_shows_pending</div><div class="test-desc">list_pending() excludes decided items</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_list_all_includes_decided</div><div class="test-desc">list_all() returns both pending and decided items</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_timeout_deny_by_default</div><div class="test-desc">Expired items resolve to DENIED (fail-safe default)</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_timeout_approve_when_configured</div><div class="test-desc">ESCALATION_TIMEOUT_ACTION=approve resolves expired to APPROVED</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_context_preserved</div><div class="test-desc">Tool args, risk_score, and context dict preserved on fetch</div></div>
+      </div>
+    </div>
+
+    <div class="module-card v3-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Redis Rate Limiter</div>
+          <div class="card-filename">test_redis_rate_limiter.py</div>
+        </div>
+        <span class="card-count">10 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_allows_up_to_limit</div><div class="test-desc">Requests 1–5 allowed; remaining count decrements correctly</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_blocks_over_limit</div><div class="test-desc">Request 6 is denied; remaining=0</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_different_users_independent</div><div class="test-desc">Exhausting alice's limit does not affect bob</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_unknown_window_passes</div><div class="test-desc">Unknown window name returns allowed=True with error key</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_reset_clears_counts</div><div class="test-desc">reset() allows requests again after exhaustion</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_backend_type_memory</div><div class="test-desc">backend_type property returns "memory" for in-memory backend</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_configure_custom_limit</div><div class="test-desc">configure() adds new named window with custom limit</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_returns_info_dict</div><div class="test-desc">check() returns dict with limit, used, remaining, window_seconds, backend</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_redis_backend_not_available_falls_back</div><div class="test-desc">Unreachable Redis silently falls back to memory backend</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_memory_backend_sliding_window</div><div class="test-desc">Entries older than window_seconds expire; slot frees up</div></div>
+      </div>
+    </div>
+
+  </div><!-- /v3 grid -->
+
+  <div class="divider"></div>
+
+  <!-- V1 FOUNDATION -->
+  <div class="section-header">
+    <h2>Foundation &amp; Policy</h2>
+    <span class="version-badge v1">v1</span>
+  </div>
+  <p class="section-desc">Core gateway: policy enforcement, injection detection, model routing, cost calculation, and audit logging.</p>
+
+  <div class="module-grid">
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Policy Engine</div>
+          <div class="card-filename">test_policy.py</div>
+        </div>
+        <span class="card-count">8 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_approved_request</div><div class="test-desc">Valid request from whitelisted user is approved</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_user_not_whitelisted</div><div class="test-desc">Unknown user is rejected with user_not_whitelisted</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_injection_detection</div><div class="test-desc">"Ignore all instructions" triggers injection_detected</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_injection_detection_case_insensitive</div><div class="test-desc">JAILBREAK in caps still detected</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_model_not_whitelisted</div><div class="test-desc">Unknown model name rejected</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_budget_exceeded</div><div class="test-desc">budget_usd over limit triggers budget_exceeded</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_rate_limit_not_exceeded</div><div class="test-desc">First 5 requests all approved</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_rate_limit_exceeded</div><div class="test-desc">Request 61 returns rate_limited</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Injection Detection</div>
+          <div class="card-filename">test_injection.py</div>
+        </div>
+        <span class="card-count">5 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_ignore_instructions_detected</div><div class="test-desc">"ignore all instructions" pattern flagged</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_you_are_now_detected</div><div class="test-desc">"you are now" role-swap attempt flagged</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_jailbreak_detected</div><div class="test-desc">"jailbreak" keyword flagged</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_legitimate_prompt_not_flagged</div><div class="test-desc">4 benign prompts pass without false positive</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_injection_with_variations</div><div class="test-desc">UPPERCASE and mixed-case injection variants detected</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Cost Calculator</div>
+          <div class="card-filename">test_cost_calculator.py</div>
+        </div>
+        <span class="card-count">7 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_count_tokens_heuristic</div><div class="test-desc">Token count approximation: chars/4</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_count_tokens_minimum</div><div class="test-desc">Minimum of 1 token for any non-empty input</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_calculate_cost_ollama_free</div><div class="test-desc">Ollama model costs $0.00</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_calculate_cost_claude_sonnet</div><div class="test-desc">Claude Sonnet priced correctly per token</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_calculate_cost_claude_haiku</div><div class="test-desc">Claude Haiku priced correctly per token</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_estimate_cost_for_prompt</div><div class="test-desc">estimate_cost() returns positive float for prompt</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_estimate_cost_ollama_free</div><div class="test-desc">Ollama estimate always 0.0</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- V2 AGENT ORCHESTRATION -->
+  <div class="section-header">
+    <h2>Agent Orchestration</h2>
+    <span class="version-badge v2">v2</span>
+  </div>
+  <p class="section-desc">Multi-step agent executor, tool calling, session management, streaming, approvals, restrictions, validators, analytics, reporting, alerting, and load testing.</p>
+
+  <div class="module-grid">
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Agent Execution Engine</div>
+          <div class="card-filename">test_agent_engine.py</div>
+        </div>
+        <span class="card-count">14 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_simple_response</div><div class="test-desc">Single-turn response completes with COMPLETED status</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_with_tool_call</div><div class="test-desc">Agent calls search tool and records it in tools_called</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_budget_exceeded</div><div class="test-desc">Very low budget triggers FAILED with "Budget exceeded"</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_timeout</div><div class="test-desc">Slow response with tiny timeout triggers FAILED</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_max_iterations</div><div class="test-desc">Never-ending tool calls hit max_iterations → TIMEOUT</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_tool_error_handling</div><div class="test-desc">Calling a nonexistent tool records ERROR step; still completes</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_execution_trace</div><div class="test-desc">Execution trace contains THINKING and/or TOOL_CALL steps</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_cost_tracking</div><div class="test-desc">total_cost_usd is positive after execution</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_multiple_tools</div><div class="test-desc">Two sequential tool calls recorded correctly</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_build_system_prompt</div><div class="test-desc">System prompt mentions available tools</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_is_final_response</div><div class="test-desc">JSON = tool call; plain text = final response</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_parse_tool_calls</div><div class="test-desc">Parses tool name and args from JSON response</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_result_structure</div><div class="test-desc">Result has all required fields: agent_id, request_id, status, cost, etc.</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_with_context</div><div class="test-desc">Additional context dict passed through to execution</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Agent Integration</div>
+          <div class="card-filename">test_agent_integration.py</div>
+        </div>
+        <span class="card-count">15 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_with_approval_workflow</div><div class="test-desc">High-risk tools create approval requests</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_respects_restrictions</div><div class="test-desc">Restricted tools are blocked by policy</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_cost_tracking</div><div class="test-desc">Cost accumulates across multi-step execution</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_execution_audit_logging</div><div class="test-desc">Every execution is written to audit log</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_budget_enforcement</div><div class="test-desc">Budget cap halts execution mid-run</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_with_rate_limiting</div><div class="test-desc">Rate limit hit triggers FAILED with rate_limited reason</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_restrictions_integration_with_approval</div><div class="test-desc">Restriction + approval layers interact correctly</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_full_agent_workflow</div><div class="test-desc">End-to-end: request → tool → result → final response</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_blocks_internal_http</div><div class="test-desc">HTTP tool to internal IP is blocked by validator</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_blocks_unsafe_code</div><div class="test-desc">Python code with import os blocked by validator</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_blocks_sql_delete</div><div class="test-desc">DELETE statement blocked by SQL validator</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_concurrent_agent_executions</div><div class="test-desc">Multiple agents run in parallel without collision</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_memory_efficiency</div><div class="test-desc">Memory usage stays bounded across many executions</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_handles_claude_error</div><div class="test-desc">Claude API error results in FAILED status</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_agent_handles_tool_error</div><div class="test-desc">Tool execution error recorded in trace; agent continues</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Tool Approvals</div>
+          <div class="card-filename">test_approvals.py</div>
+        </div>
+        <span class="card-count">10 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_should_require_approval_python_eval</div><div class="test-desc">python_eval requires approval</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_should_require_approval_sql_query</div><div class="test-desc">sql_query requires approval</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_should_not_require_approval_http_get</div><div class="test-desc">http_get does not require approval</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_should_not_require_approval_search</div><div class="test-desc">search does not require approval</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_request_approval</div><div class="test-desc">request_approval() returns ToolApprovalRequest with approval_id</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_get_pending_approvals</div><div class="test-desc">get_pending_approvals() returns all unanswered requests</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_get_user_approvals</div><div class="test-desc">get_user_approvals() filters by user_id correctly</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_approval_default_status_pending</div><div class="test-desc">New approval defaults to PENDING status</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_multiple_approval_requests</div><div class="test-desc">5 approvals from same user all get unique IDs</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">test_approval_request_with_no_args</div><div class="test-desc">Approval without args defaults to empty dict</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Input Validators</div>
+          <div class="card-filename">test_validators.py</div>
+        </div>
+        <span class="card-count">52 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">HttpValidator (21 tests)</div><div class="test-desc">URL scheme, localhost/private-IP blocking, whitelist, header safety, body size</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">PythonValidator (13 tests)</div><div class="test-desc">Blocks import, subprocess, eval, exec, open, socket, __dunder__; allows safe code</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">SearchValidator (7 tests)</div><div class="test-desc">Empty query, length limits, limit type and range (1–100)</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">SqlValidator (11 tests)</div><div class="test-desc">Blocks DROP/DELETE/TRUNCATE/ALTER/UPDATE; allows SELECT; enforces whitelist</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Tool Registry &amp; Executors</div>
+          <div class="card-filename">test_tool_registry.py · test_tool_executors.py</div>
+        </div>
+        <span class="card-count">30 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Registry (10 tests)</div><div class="test-desc">Register, unregister, list, get, call, schema validation, custom tools</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">HttpToolExecutor (8 tests)</div><div class="test-desc">GET/POST with mock responses, blocked domains, error handling</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">PythonToolExecutor (6 tests)</div><div class="test-desc">Safe eval, stdout capture, exception handling, timeout</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">SearchToolExecutor (6 tests)</div><div class="test-desc">Result formatting, limit enforcement, empty results</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Session Management</div>
+          <div class="card-filename">test_sessions.py</div>
+        </div>
+        <span class="card-count">31 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Session lifecycle (8 tests)</div><div class="test-desc">Create, get, list, expire, TTL enforcement</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Context management (9 tests)</div><div class="test-desc">History append, trim, context window limits, serialization</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Multi-turn execution (8 tests)</div><div class="test-desc">Stateful conversation, tool results in history, cross-turn memory</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Concurrency (6 tests)</div><div class="test-desc">Parallel session access, lock contention, isolation guarantees</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Streaming</div>
+          <div class="card-filename">test_streaming.py</div>
+        </div>
+        <span class="card-count">21 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">WebSocket streaming (8 tests)</div><div class="test-desc">Connect, receive events, disconnect, error handling</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">SSE fallback (6 tests)</div><div class="test-desc">Server-Sent Events format, event types, connection close</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Event ordering (7 tests)</div><div class="test-desc">Step events arrive in order; final event last; no duplicates</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Analytics</div>
+          <div class="card-filename">test_analytics.py</div>
+        </div>
+        <span class="card-count">35 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">QueryAnalytics (6 tests)</div><div class="test-desc">Complexity distribution, success rate, latency, cost per query</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">UserAnalytics (4 tests)</div><div class="test-desc">Per-user metrics, spending trends, top spenders</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">ToolAnalytics (4 tests)</div><div class="test-desc">Tool stats, failure rate, rankings</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">CostAnalytics (6 tests)</div><div class="test-desc">Daily costs, totals, forecasting, per-user breakdown</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">PerformanceAnalytics (5 tests)</div><div class="test-desc">Latency percentiles, throughput, empty state handling</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">StreamingAnalytics (4 tests)</div><div class="test-desc">Session stats, completion rate, duration, events per session</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Singletons (6 tests)</div><div class="test-desc">Each analytics module returns same instance across calls</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Complexity Detection</div>
+          <div class="card-filename">test_complexity.py</div>
+        </div>
+        <span class="card-count">31 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Complexity scoring (9 tests)</div><div class="test-desc">Simple/moderate/complex/very-complex classification; token/duration estimation</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Tool suggestion (6 tests)</div><div class="test-desc">Suggests search, calculator, code-gen, analytics tools for relevant queries</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Effectiveness tracker (10 tests)</div><div class="test-desc">Success/fail recording, effectiveness score, rankings, reset, independence</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Accuracy edge cases (6 tests)</div><div class="test-desc">Empty query, single word, very long query, case insensitivity, consistency</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Tool Restrictions</div>
+          <div class="card-filename">test_restrictions.py</div>
+        </div>
+        <span class="card-count">21 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">YAML rule loading (5 tests)</div><div class="test-desc">Parse restriction files; invalid YAML skipped; empty dir handled</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Enforcement (9 tests)</div><div class="test-desc">Block by tool name, user, time-of-day, regex pattern, combination rules</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Allow rules (4 tests)</div><div class="test-desc">Explicit allow overrides default deny</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Edge cases (3 tests)</div><div class="test-desc">No restrictions → allowed; empty tool name; unknown user</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Security Hardening</div>
+          <div class="card-filename">test_security_hardening.py</div>
+        </div>
+        <span class="card-count">29 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Sandbox escape prevention (8 tests)</div><div class="test-desc">__import__, globals(), builtins, sys.modules all blocked in eval</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">SSRF prevention (7 tests)</div><div class="test-desc">169.254.x.x, 10.x.x.x, 192.168.x.x, metadata endpoints all blocked</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">SQL injection (6 tests)</div><div class="test-desc">UNION, SLEEP, DROP, stacked queries blocked in SQL validator</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Prompt injection via tool result (8 tests)</div><div class="test-desc">Injections embedded in tool results are caught before re-submission to model</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Distributed &amp; Cache</div>
+          <div class="card-filename">test_distributed.py</div>
+        </div>
+        <span class="card-count">23 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">MemoryCacheBackend (5 tests)</div><div class="test-desc">set/get, delete, TTL expiration, increment, clear</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">CacheManager (4 tests)</div><div class="test-desc">Session cache, rate-limit tracking, cost tracking, execution cache</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">DistributedRateLimiter (5 tests)</div><div class="test-desc">Per-minute/hour limits, custom windows, whitelist bypass, status reporting</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">AdaptiveRateLimiter (3 tests)</div><div class="test-desc">Dynamic limit adjustment, adaptive check, whitelist</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Distributed scenarios (3 tests)</div><div class="test-desc">Multi-instance rate limit sharing, session sharing, cost distribution</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Performance (3 tests)</div><div class="test-desc">Cache throughput, rate-limit throughput under load</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Reporting</div>
+          <div class="card-filename">test_reporting.py · test_reporting_integration.py · test_analytics_filtering.py</div>
+        </div>
+        <span class="card-count">~50 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Report generation (12 tests)</div><div class="test-desc">JSON/CSV export, SOC-2 template, HIPAA template, date range filtering</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Integration (10 tests)</div><div class="test-desc">Report reads from live analytics service; multi-user, multi-day data</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Filtering (15+ tests)</div><div class="test-desc">Filter by user, model, date, cost range, complexity level, violation type</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Alerting</div>
+          <div class="card-filename">test_alert_channels.py · test_alert_triggers.py · test_alert_delivery_queue.py · test_metrics_streaming.py</div>
+        </div>
+        <span class="card-count">~60 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Alert channels (18 tests)</div><div class="test-desc">Email, Slack, webhook delivery; retry logic; channel enable/disable</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Trigger rules (12 tests)</div><div class="test-desc">Cost threshold, error rate, policy violation count, custom expressions</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Delivery queue (15 tests)</div><div class="test-desc">Enqueue, dequeue, priority ordering, dead-letter, backoff</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Metrics streaming (15+ tests)</div><div class="test-desc">Real-time event emission, subscriber fanout, connection management</div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Load &amp; Performance</div>
+          <div class="card-filename">test_load.py</div>
+        </div>
+        <span class="card-count">17 tests</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Concurrent executions (3 tests)</div><div class="test-desc">5 and 10 parallel agents complete without error; throughput measured</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Sequential throughput (2 tests)</div><div class="test-desc">100 sequential executions; latency distribution captured</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Tool performance (3 tests)</div><div class="test-desc">Search and Python tool p99 latency; concurrent tool calls</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">API endpoints (2 tests)</div><div class="test-desc">/tools response time; large execution trace handling</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Resource usage (2 tests)</div><div class="test-desc">Request and response size within acceptable bounds</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Stress scenarios (3 tests)</div><div class="test-desc">Rapid-fire requests, budget enforcement under load, timeout variation</div></div>
+        <div class="test-item"><div class="test-dot"></div><div class="test-name">Memory stability (2 tests)</div><div class="test-desc">No memory leak after 50 agent runs; error recovery under load</div></div>
+      </div>
+    </div>
+
+  </div><!-- /v2 grid -->
+
+  <div class="divider"></div>
+
+  <!-- COVERAGE SUMMARY -->
+  <div class="coverage-bar-wrap">
+    <h3>Tests per Module</h3>
+
+    <div class="bar-row"><div class="bar-label">test_validators.py</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-pct">52</div></div>
+    <div class="bar-row"><div class="bar-label">test_analytics.py</div><div class="bar-track"><div class="bar-fill" style="width:67%"></div></div><div class="bar-pct">35</div></div>
+    <div class="bar-row"><div class="bar-label">test_sessions.py</div><div class="bar-track"><div class="bar-fill" style="width:60%"></div></div><div class="bar-pct">31</div></div>
+    <div class="bar-row"><div class="bar-label">test_complexity.py</div><div class="bar-track"><div class="bar-fill" style="width:60%"></div></div><div class="bar-pct">31</div></div>
+    <div class="bar-row"><div class="bar-label">test_security_hardening.py</div><div class="bar-track"><div class="bar-fill" style="width:56%"></div></div><div class="bar-pct">29</div></div>
+    <div class="bar-row"><div class="bar-label">test_distributed.py</div><div class="bar-track"><div class="bar-fill" style="width:44%"></div></div><div class="bar-pct">23</div></div>
+    <div class="bar-row"><div class="bar-label">test_streaming.py</div><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><div class="bar-pct">21</div></div>
+    <div class="bar-row"><div class="bar-label">test_restrictions.py</div><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><div class="bar-pct">21</div></div>
+    <div class="bar-row"><div class="bar-label">test_tool_executors.py</div><div class="bar-track"><div class="bar-fill" style="width:38%"></div></div><div class="bar-pct">20</div></div>
+    <div class="bar-row"><div class="bar-label">test_threat_detector.py</div><div class="bar-track"><div class="bar-fill" style="width:37%"></div></div><div class="bar-pct">19</div></div>
+    <div class="bar-row"><div class="bar-label">test_load.py</div><div class="bar-track"><div class="bar-fill" style="width:33%"></div></div><div class="bar-pct">17</div></div>
+    <div class="bar-row"><div class="bar-label">test_agent_integration.py</div><div class="bar-track"><div class="bar-fill" style="width:29%"></div></div><div class="bar-pct">15</div></div>
+    <div class="bar-row"><div class="bar-label">test_agent_engine.py</div><div class="bar-track"><div class="bar-fill" style="width:27%"></div></div><div class="bar-pct">14</div></div>
+    <div class="bar-row"><div class="bar-label">test_audit_encryption.py</div><div class="bar-track"><div class="bar-fill" style="width:25%"></div></div><div class="bar-pct">13</div></div>
+    <div class="bar-row"><div class="bar-label">test_policy_dsl.py</div><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><div class="bar-pct">11</div></div>
+    <div class="bar-row"><div class="bar-label">test_escalation.py</div><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><div class="bar-pct">11</div></div>
+    <div class="bar-row"><div class="bar-label">test_tool_registry.py</div><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div><div class="bar-pct">10</div></div>
+    <div class="bar-row"><div class="bar-label">test_redis_rate_limiter.py</div><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div><div class="bar-pct">10</div></div>
+    <div class="bar-row"><div class="bar-label">test_approvals.py</div><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div><div class="bar-pct">10</div></div>
+    <div class="bar-row"><div class="bar-label">test_policy.py</div><div class="bar-track"><div class="bar-fill" style="width:15%"></div></div><div class="bar-pct">8</div></div>
+    <div class="bar-row"><div class="bar-label">test_cost_calculator.py</div><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><div class="bar-pct">7</div></div>
+    <div class="bar-row"><div class="bar-label">test_injection.py</div><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><div class="bar-pct">5</div></div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://github.com/g1sp/ai-control-plane">github.com/g1sp/ai-control-plane</a>
+    &nbsp;·&nbsp;
+    v3.0.0 Safety &amp; Governance
+    &nbsp;·&nbsp;
+    413 tests &nbsp;·&nbsp; 92%+ coverage
+    &nbsp;·&nbsp;
+    April 2026
+  </p>
+</footer>
+
+</body>
+</html>
