@@ -1,0 +1,52 @@
+version: "1"
+
+# Blocked domains for HTTP tool calls
+blocked_domains:
+  - "169.254.169.254"   # AWS metadata endpoint
+  - "metadata.google.internal"
+  - "169.254.170.2"     # ECS metadata
+
+# PII patterns (used by pii-detection rule)
+pii_patterns:
+  - "ssn"
+  - "social security"
+  - "credit card"
+  - "cvv"
+  - "date of birth"
+
+policies:
+  - name: block-metadata-endpoints
+    trigger: tool_call
+    condition: "tool == 'http_request' and any(d in str(args) for d in blocked_domains)"
+    action: block
+    message: "Cloud metadata endpoint access blocked"
+
+  - name: block-destructive-code
+    trigger: tool_call
+    condition: "tool == 'code_execution' and any(p in str(args) for p in ['rm -rf', 'DROP TABLE', 'DELETE FROM', 'format(', 'mkfs', 'dd if='])"
+    action: block
+    message: "Destructive operation blocked by policy"
+
+  - name: pii-exfiltration-detection
+    trigger: input
+    condition: "any(p in prompt.lower() for p in pii_patterns)"
+    action: block
+    message: "PII-related content blocked by policy"
+
+  - name: budget-escalate
+    trigger: pre_execution
+    condition: "estimated_cost > 0.50"
+    action: escalate
+    message: "Request cost exceeds $0.50 — requires approval"
+
+  - name: high-risk-tool-escalate
+    trigger: tool_call
+    condition: "tool == 'code_execution' and risk_score >= 0.65"
+    action: escalate
+    message: "High-risk code execution requires approval"
+
+  - name: rate-limit-burst
+    trigger: pre_execution
+    condition: "requests_last_minute > 30"
+    action: block
+    message: "Burst rate limit exceeded (30 req/min)"

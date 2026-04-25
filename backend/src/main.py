@@ -19,6 +19,8 @@ from .models import (
 from .services.policy import PolicyEngine
 from .services.router import ModelRouter
 from .services.audit import AuditLogger
+from .services.audit_encryption import generate_key_b64, rekey_value
+from .services.escalation import EscalationService, EscalationStatus
 from .services.cost_calculator import CostCalculator
 from .services.streaming import get_stream_manager, StreamingEventCallback
 from .integrations.ollama import OllamaClient
@@ -1244,6 +1246,114 @@ async def get_filtered_user_costs(
             "cost_range": [cost_min, cost_max] if cost_min or cost_max else None,
         },
     }
+
+
+@app.get("/escalations/pending")
+async def list_pending_escalations(db: Session = Depends(get_db)):
+    """List all pending escalation items awaiting human decision."""
+    svc = EscalationService(db)
+    items = svc.list_pending()
+    return {
+        "pending": [
+            {
+                "id": i.id,
+                "user_id": i.user_id,
+                "trigger_type": i.trigger_type,
+                "trigger_name": i.trigger_name,
+                "risk_score": i.risk_score,
+                "policy_message": i.policy_message,
+                "context": i.context,
+                "created_at": i.created_at,
+            }
+            for i in items
+        ],
+        "count": len(items),
+    }
+
+
+@app.get("/escalations")
+async def list_all_escalations(
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+):
+    """List all escalation items with pagination."""
+    svc = EscalationService(db)
+    items = svc.list_all(limit=limit, offset=offset)
+    return {
+        "items": [
+            {
+                "id": i.id,
+                "user_id": i.user_id,
+                "trigger_name": i.trigger_name,
+                "risk_score": i.risk_score,
+                "status": i.status,
+                "created_at": i.created_at,
+                "decided_at": i.decided_at,
+                "decided_by": i.decided_by,
+            }
+            for i in items
+        ],
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+@app.post("/escalations/{escalation_id}/decide")
+async def decide_escalation(
+    escalation_id: int,
+    approved: bool,
+    decided_by: str = "admin",
+    comment: str = "",
+    db: Session = Depends(get_db),
+):
+    """Approve or deny an escalation item."""
+    svc = EscalationService(db)
+    item = svc.decide(escalation_id, approved=approved, decided_by=decided_by, comment=comment)
+    if not item:
+        raise HTTPException(status_code=404, detail="Escalation not found or already decided")
+    return {"id": item.id, "status": item.status, "decided_by": item.decided_by}
+
+
+@app.get("/admin/audit/keygen")
+async def generate_audit_key():
+    """Generate a new AES-256 encryption key for AUDIT_ENCRYPTION_KEY env var."""
+    return {"key_b64": generate_key_b64(), "note": "Set as AUDIT_ENCRYPTION_KEY env var (32 bytes, base64)"}
+
+
+@app.post("/admin/audit/rekey")
+async def rekey_audit_logs(
+    old_key_b64: str,
+    new_key_b64: str,
+    db: Session = Depends(get_db),
+):
+    """Re-encrypt all audit records from old_key to new_key. Run during key rotation."""
+    from .database import AuditRequest
+    records = db.query(AuditRequest).all()
+    updated = 0
+    errors = 0
+    for r in records:
+        try:
+            if r.prompt:
+                r.prompt = rekey_value(r.prompt, old_key_b64, new_key_b64)
+            if r.response:
+                r.response = rekey_value(r.response, old_key_b64, new_key_b64)
+            updated += 1
+        except Exception as e:
+            logger.error("Rekey failed for record %d: %s", r.id, e)
+            errors += 1
+    db.commit()
+    return {"updated": updated, "errors": errors}
+
+
+@app.get("/compliance/audit/{request_id}")
+async def get_audit_record_decrypted(request_id: int, db: Session = Depends(get_db)):
+    """Return a single audit record with sensitive fields decrypted. Compliance use only."""
+    audit = AuditLogger(db)
+    record = audit.get_request_decrypted(request_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Audit record not found")
+    return record
 
 
 if __name__ == "__main__":

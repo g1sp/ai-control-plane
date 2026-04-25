@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from ..database import AuditRequest, AuditViolation
 from ..models import QueryRequest, QueryResponse, AuditRecord, SummaryStats
+from .audit_encryption import encrypt_field, decrypt_field
 
 
 class AuditLogger:
@@ -25,8 +26,8 @@ class AuditLogger:
         audit_record = AuditRequest(
             timestamp=datetime.utcnow(),
             user_id=request.user_id,
-            prompt=request.prompt,  # In v2, encrypt this
-            response=response.response if response else "",
+            prompt=encrypt_field(request.prompt),
+            response=encrypt_field(response.response if response else ""),
             model_used=response.model_used if response else "",
             tokens_in=response.tokens_in if response else 0,
             tokens_out=response.tokens_out if response else 0,
@@ -150,6 +151,26 @@ class AuditLogger:
             violations=violations,
             average_cost_per_request=round(avg_cost, 6),
         )
+
+    def get_request_decrypted(self, request_id: int) -> dict | None:
+        """Return a single audit record with prompt/response decrypted. Compliance use only."""
+        r = self.db.query(AuditRequest).filter(AuditRequest.id == request_id).first()
+        if not r:
+            return None
+        return {
+            "id": r.id,
+            "timestamp": r.timestamp,
+            "user_id": r.user_id,
+            "prompt": decrypt_field(r.prompt),
+            "response": decrypt_field(r.response),
+            "model_used": r.model_used,
+            "tokens_in": r.tokens_in,
+            "tokens_out": r.tokens_out,
+            "cost_usd": r.cost_usd,
+            "policy_decision": r.policy_decision,
+            "duration_ms": r.duration_ms,
+            "error_message": r.error_message,
+        }
 
     def get_violations(self, hours: int = 24) -> list:
         """Get recent policy violations."""

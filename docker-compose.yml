@@ -16,13 +16,35 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       DATABASE_URL: sqlite:////app/data/audit.db
       OLLAMA_HOST: http://ollama:11434
+      # v3 Safety & Governance
+      AUDIT_ENCRYPTION_KEY: ${AUDIT_ENCRYPTION_KEY:-}
+      RATE_LIMIT_BACKEND: ${RATE_LIMIT_BACKEND:-memory}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      ESCALATION_TIMEOUT_SECONDS: ${ESCALATION_TIMEOUT_SECONDS:-300}
+      ESCALATION_TIMEOUT_ACTION: ${ESCALATION_TIMEOUT_ACTION:-deny}
     volumes:
       - ./data:/app/data
+      - ./backend/policies:/app/policies
     depends_on:
       - ollama
+      - redis
     networks:
       - gateway-network
     restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    networks:
+      - gateway-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   ollama:
     image: ollama/ollama:latest
