@@ -2,7 +2,7 @@
 
 import sqlite3
 from pathlib import Path
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, JSON
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, JSON, event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
@@ -22,6 +22,14 @@ engine = create_engine(
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+# Enable foreign keys for SQLite
+@event.listens_for(engine, "connect")
+def set_sqlite_pragma(dbapi_conn, connection_record):
+    """Enable foreign key support in SQLite."""
+    cursor = dbapi_conn.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 
 class AuditRequest(Base):
@@ -103,6 +111,12 @@ class ToolApproval(Base):
 def init_db():
     """Initialize database schema."""
     Base.metadata.create_all(bind=engine)
+
+    try:
+        from .services.migration_runner import init_migrations
+        init_migrations()
+    except ImportError:
+        pass
 
 
 def get_db():
