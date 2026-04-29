@@ -1,15 +1,13 @@
-/**
- * Reusable metric card component
- */
-
 import React from "react";
 
 interface MetricCardProps {
   title: string;
   value: string | number;
+  unit?: string;
   subtitle?: string;
   color?: "blue" | "green" | "red" | "yellow" | "purple";
   icon?: React.ReactNode;
+  trend?: "up" | "down" | "stable" | "loading";
 }
 
 const colorClasses = {
@@ -31,21 +29,38 @@ const valueColorClasses = {
 export const MetricCard: React.FC<MetricCardProps> = ({
   title,
   value,
+  unit,
   subtitle,
   color = "blue",
   icon,
+  trend = "stable",
 }) => {
+  const getTrendIndicator = () => {
+    if (trend === "loading") return "⟳";
+    if (trend === "up") return "↑";
+    if (trend === "down") return "↓";
+    return "→";
+  };
+
   return (
-    <div className={`border-l-4 rounded p-4 ${colorClasses[color]}`}>
+    <div className={`border-l-4 rounded-lg p-6 ${colorClasses[color]} shadow-sm hover:shadow-md transition-shadow`}>
       <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-semibold text-gray-600">{title}</p>
-          <p className={`text-2xl font-bold mt-2 ${valueColorClasses[color]}`}>
-            {value}
-          </p>
-          {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-slate-600">{title}</p>
+          <div className="flex items-baseline gap-2 mt-2">
+            <p className={`text-3xl font-bold ${valueColorClasses[color]}`}>
+              {value}
+            </p>
+            {unit && <p className="text-sm text-slate-600">{unit}</p>}
+          </div>
+          {subtitle && <p className="text-xs text-slate-500 mt-2">{subtitle}</p>}
         </div>
-        {icon && <div className="text-2xl">{icon}</div>}
+        <div className="flex items-start gap-2">
+          <div className="text-3xl">{icon}</div>
+          <div className={`text-xl ${trend === "loading" ? "animate-spin" : ""}`}>
+            {getTrendIndicator()}
+          </div>
+        </div>
       </div>
     </div>
   );
