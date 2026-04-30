@@ -12,6 +12,7 @@ from src.database import Base, AuditRequest, AuditViolation, AgentExecution, Too
 from src.tools.registry import ToolRegistry
 from src.tools.executors import HttpToolExecutor, SearchToolExecutor, PythonToolExecutor
 from src.agents.models import AgentRequest
+from src.auth.keys import APIKeyValidator
 
 
 @pytest.fixture(scope="session")
@@ -112,3 +113,30 @@ def agent_request():
         max_iterations=5,
         timeout_seconds=30
     )
+
+
+@pytest.fixture
+def api_key_validator():
+    """Create API key validator for testing."""
+    # Initialize with test keys
+    keys_config = '{"pk-test": "sk-test-secret-123", "pk-demo": "sk-demo-secret-456"}'
+    validator = APIKeyValidator(keys_config)
+    return validator
+
+
+@pytest.fixture
+def demo_api_key():
+    """Return demo API key for testing."""
+    return "sk-demo-secret-456"
+
+
+@pytest.fixture
+def demo_auth_header(demo_api_key):
+    """Return Authorization header with demo key."""
+    return {"Authorization": f"Bearer pk-demo:{demo_api_key}"}
+
+
+@pytest.fixture
+def invalid_auth_header():
+    """Return invalid Authorization header."""
+    return {"Authorization": "Bearer invalid-key-secret"}

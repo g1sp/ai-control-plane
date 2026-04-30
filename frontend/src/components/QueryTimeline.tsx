@@ -28,7 +28,7 @@ const QueryTimeline: React.FC<QueryTimelineProps> = ({ demoKey }) => {
 
   const fetchQueries = async () => {
     try {
-      const baseUrl = process.env.REACT_APP_API_BASE || "http://localhost:8000";
+      const baseUrl = import.meta.env.VITE_API_BASE || "http://localhost:8000";
       const response = await fetch(`${baseUrl}/audit?hours=24&limit=10`, {
         headers: {
           "Authorization": `Bearer ${demoKey}`,
@@ -37,7 +37,7 @@ const QueryTimeline: React.FC<QueryTimelineProps> = ({ demoKey }) => {
 
       if (response.ok) {
         const data = await response.json();
-        setQueries(data.slice(0, 10));
+        setQueries((data.records || []).slice(0, 10));
       }
     } catch (err) {
       console.error("Failed to fetch queries:", err);

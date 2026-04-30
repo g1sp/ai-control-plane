@@ -17,7 +17,7 @@ const CostTrend: React.FC<CostTrendProps> = ({ demoKey }) => {
 
   const fetchCostData = async () => {
     try {
-      const baseUrl = process.env.REACT_APP_API_BASE || "http://localhost:8000";
+      const baseUrl = import.meta.env.VITE_API_BASE || "http://localhost:8000";
       const response = await fetch(`${baseUrl}/api/v1/analytics/costs/daily?days=1`, {
         headers: {
           "Authorization": `Bearer ${demoKey}`,

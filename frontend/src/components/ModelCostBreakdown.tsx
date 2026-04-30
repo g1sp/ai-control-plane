@@ -19,7 +19,7 @@ const ModelCostBreakdown: React.FC<ModelCostBreakdownProps> = ({ demoKey }) => {
 
   const fetchModelCosts = async () => {
     try {
-      const baseUrl = process.env.REACT_APP_API_BASE || "http://localhost:8000";
+      const baseUrl = import.meta.env.VITE_API_BASE || "http://localhost:8000";
       const response = await fetch(`${baseUrl}/api/v1/analytics/tools?hours=24`, {
         headers: {
           "Authorization": `Bearer ${demoKey}`,

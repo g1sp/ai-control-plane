@@ -21,7 +21,7 @@ const HealthStatus: React.FC<HealthStatusProps> = ({ demoKey }) => {
 
   const fetchHealth = async () => {
     try {
-      const baseUrl = process.env.REACT_APP_API_BASE || "http://localhost:8000";
+      const baseUrl = import.meta.env.VITE_API_BASE || "http://localhost:8000";
       const response = await fetch(`${baseUrl}/health`, {
         headers: {
           "Authorization": `Bearer ${demoKey}`,

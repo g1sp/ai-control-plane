@@ -20,7 +20,7 @@ let clientRefCount = 0;
 function getOrCreateClient(userId: string): WebSocketClient {
   if (!globalClient) {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const baseUrl = process.env.REACT_APP_API_BASE || window.location.origin;
+    const baseUrl = import.meta.env.VITE_API_BASE || window.location.origin;
     const wsUrl = baseUrl.replace(/^https?/, protocol === 'wss:' ? 'wss' : 'ws');
     const url = `${wsUrl}/api/v1/analytics/stream/${userId}`;
     globalClient = new WebSocketClient(url);

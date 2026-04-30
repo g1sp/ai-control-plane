@@ -284,12 +284,83 @@ Region 1                Region 2
 | **Total (Ollama)** | **~150ms** | E2E with audit |
 | **Total (Claude)** | **~600ms** | E2E with audit |
 
+## Security Boundaries (v1.1)
+
+### Boundary 1: Authentication Layer (v1.1+)
+
+**What happens here**: API key validation
+
+```
+┌─────────────────────────────────────────────────┐
+│ CLIENT                                          │
+│ POST /query                                      │
+│ Authorization: Bearer pk-xxx:sk-yyy             │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+    ┃ BOUNDARY 1: Authentication   ┃
+    ┃ - Validate API key           ┃
+    ┃ - Map to user_id             ┃
+    ┃ - Return 401 if invalid      ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+                 │
+                 ▼
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+    ┃ BOUNDARY 2: Policy Engine    ┃
+    ┃ - Check user whitelist       ┃
+    ┃ - Detect injection attacks   ┃
+    ┃ - Enforce budget limits      ┃
+    ┃ - Apply rate limits          ┃
+    ┃ - Return 403 if rejected     ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+                 │
+                 ▼
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+    ┃ BOUNDARY 3: Model Routing    ┃
+    ┃ - Route to Ollama or Claude  ┃
+    ┃ - Execute with timeout       ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+                 │
+                 ▼
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+    ┃ BOUNDARY 4: Output Handling  ┃
+    ┃ - Log to audit trail         ┃
+    ┃ - Return raw response        ┃
+    ┃ (Client responsible for      ┃
+    ┃  sanitization/validation)    ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+```
+
+**Key Points**:
+
+| Boundary | Responsibility | Validates | Rejects |
+|----------|---|---|---|
+| **1. Auth** | Gateway | API key format & existence | 401 Unauthorized |
+| **2. Policy** | Gateway | Policy rules (user, injection, budget, rate limit) | 403 Forbidden |
+| **3. Routing** | Gateway | Model selection, timeout | 500 Server Error |
+| **4. Output** | **CLIENT** | Output sanitization, data validation | N/A |
+
+**Important**: The gateway does NOT sanitize LLM outputs. Your client application must handle output securely based on how it's used (web display, code execution, database queries, etc.). See [CLIENT_SECURITY.md](./CLIENT_SECURITY.md) for guidance.
+
+---
+
 ## Security Model
 
 See [THREAT_MODEL.md](./THREAT_MODEL.md) for full security analysis.
 
-**TL;DR**:
-- Trust boundary 1: Policy engine (prevent bad requests)
-- Trust boundary 2: Audit logging (record all decisions)
+**Summary**:
+- **Boundary 1 (v1.1+)**: Authentication validates API keys
+- **Boundary 2**: Policy engine prevents malicious requests
+- **Boundary 3**: Model routing with timeouts
+- **Boundary 4**: Audit logging records all decisions (immutable in v2)
+- **Client Layer**: Output sanitization (not gateway responsibility)
 - Assume secure host OS (Linux hardening)
-- Prompts logged (encrypted in v2)
+- Prompts logged plaintext (encrypted in v2)
+
+---
+
+**For detailed security analysis, see**:
+- [THREAT_MODEL.md](./THREAT_MODEL.md) - Full threat analysis
+- [CLIENT_SECURITY.md](./CLIENT_SECURITY.md) - Output handling best practices
+- [OWASP_LLM_TOP10_COMPARISON.md](./OWASP_LLM_TOP10_COMPARISON.md) - OWASP compliance

@@ -2,7 +2,7 @@
  * Analytics API client service
  */
 
-const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 export interface QueryAnalyticsData {
   complexity_distribution: Record<string, number>;
@@ -244,4 +244,5 @@ class AnalyticsAPIClient {
 }
 
 export const analyticsAPI = new AnalyticsAPIClient();
+export { AnalyticsAPIClient };
 export default analyticsAPI;

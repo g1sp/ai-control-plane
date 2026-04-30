@@ -188,3 +188,35 @@ class AuditLogger:
             }
             for v in violations
         ]
+
+    def get_decisions_summary(self, hours: int = 24) -> dict:
+        """Get policy decision breakdown for the last N hours."""
+        cutoff = datetime.utcnow() - timedelta(hours=hours)
+
+        total = self.db.query(func.count(AuditRequest.id)).filter(
+            AuditRequest.timestamp >= cutoff
+        ).scalar() or 0
+
+        approved = self.db.query(func.count(AuditRequest.id)).filter(
+            AuditRequest.timestamp >= cutoff,
+            AuditRequest.policy_decision == "approved"
+        ).scalar() or 0
+
+        rejected = total - approved
+
+        violations = self.db.query(AuditRequest.policy_decision, func.count(AuditRequest.id)).filter(
+            AuditRequest.timestamp >= cutoff,
+            AuditRequest.policy_decision != "approved"
+        ).group_by(AuditRequest.policy_decision).all()
+
+        violation_breakdown = {}
+        for decision, count in violations:
+            if decision:
+                violation_breakdown[decision] = count
+
+        return {
+            "total": total,
+            "approved": approved,
+            "rejected": rejected,
+            "violations": violation_breakdown,
+        }

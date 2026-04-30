@@ -55,12 +55,10 @@ class Settings(BaseSettings):
         "pretend you are",
     ]
 
-    # v3 Safety & Governance
-    audit_encryption_key: str = ""
-    rate_limit_backend: str = "memory"
-    redis_url: str = "redis://localhost:6379"
-    escalation_timeout_seconds: int = 300
-    escalation_timeout_action: str = "deny"
+    # API Key Authentication (v1.1)
+    # Format: JSON string like '{"pk-demo": "sk-demo-secret-123"}'
+    # In production, use environment variable or secrets manager
+    api_keys: str = '{"pk-demo": "sk-demo-secret-123"}'
 
     class Config:
         env_file = ".env"

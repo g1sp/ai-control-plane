@@ -70,3 +70,5 @@ export function RealtimeStatus({ connectionState, lastUpdateTime }: RealtimeStat
     </div>
   );
 }
+
+export default RealtimeStatus;
