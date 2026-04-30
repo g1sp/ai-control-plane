@@ -108,6 +108,18 @@ class ToolApproval(Base):
     decision_by = Column(String, nullable=True)
 
 
+class PolicyConfiguration(Base):
+    """Policy configuration settings with history tracking."""
+    __tablename__ = "policy_configuration"
+
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String, index=True)  # Not unique—allows multiple versions
+    value = Column(Text)  # JSON-serialized for complex types
+    data_type = Column(String)  # list, float, int, string
+    last_modified = Column(DateTime, default=datetime.utcnow, index=True)
+    modified_by = Column(String, default="system")
+
+
 def init_db():
     """Initialize database schema."""
     Base.metadata.create_all(bind=engine)

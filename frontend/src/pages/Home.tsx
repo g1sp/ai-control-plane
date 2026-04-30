@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { LatencyData } from "../services/analyticsAPI";
 import MetricCard from "../components/MetricCard";
 import HealthStatus from "../components/HealthStatus";
+import PolicyDecisionBreakdown from "../components/PolicyDecisionBreakdown";
+import SecurityEventsTimeline from "../components/SecurityEventsTimeline";
 import QueryTimeline from "../components/QueryTimeline";
 import CostTrend from "../components/CostTrend";
 import ModelCostBreakdown from "../components/ModelCostBreakdown";
@@ -29,7 +32,7 @@ const Home: React.FC = () => {
 
   const fetchMetrics = async () => {
     try {
-      const baseUrl = process.env.REACT_APP_API_BASE || "http://localhost:8000";
+      const baseUrl = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
       const response = await fetch(`${baseUrl}/api/v1/analytics/queries?hours=24`, {
         headers: {
@@ -87,9 +90,25 @@ const Home: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">AI Gateway</h1>
-          <p className="text-slate-600">Home Network Monitor</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">AI Gateway</h1>
+            <p className="text-slate-600">Home Network Monitor</p>
+          </div>
+          <div className="flex gap-2">
+            <Link
+              to="/security"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            >
+              🔒 OWASP LLM Status
+            </Link>
+            <Link
+              to="/configuration"
+              className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition"
+            >
+              ⚙️ Configuration
+            </Link>
+          </div>
         </div>
 
         {/* Health Status */}
@@ -133,6 +152,11 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <CostTrend demoKey={DEMO_KEY} />
           <ModelCostBreakdown demoKey={DEMO_KEY} />
+        </div>
+
+        {/* Security Events */}
+        <div className="mb-8">
+          <SecurityEventsTimeline demoKey={DEMO_KEY} />
         </div>
 
         {/* Recent Queries */}
